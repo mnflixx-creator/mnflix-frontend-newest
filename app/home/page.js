@@ -56,33 +56,27 @@ export default function HomePage() {
       const item = typeof itemOrId === "object" ? itemOrId : null;
       const tmdbId = item?.id || itemOrId;
 
-      const mediaType =
-        item?.media_type || (item?.first_air_date || item?.name ? "tv" : "movie");
-
-      const endpoint =
-        mediaType === "tv"
-          ? `${API_BASE}/api/tmdb/import-tv/${tmdbId}`
-          : `${API_BASE}/api/tmdb/import/${tmdbId}`;
+      // Decide content type you want to save in your DB
+      // default: tv -> series, movie -> movie
+      const type =
+        item?.media_type === "tv" || item?.first_air_date || item?.name
+          ? "series"
+          : "movie";
 
       const token = localStorage.getItem("token");
 
-      const res = await fetch(endpoint, {
-        method: "POST",
+      // ✅ Use YOUR SAFE route (creates if missing, returns existing if already there)
+      const res = await fetch(`${API_BASE}/api/movies/by-tmdb/${tmdbId}?type=${type}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
       const data = await res.json().catch(() => ({}));
+      if (!res.ok) return alert(data?.message || `Open failed (${res.status})`);
 
-      if (!res.ok) {
-        return alert(data?.message || `Import failed (${res.status})`);
-      }
-
-      const mongoId = data?.movie?._id || data?.series?._id;
-      if (!mongoId) return alert(data?.message || "Import failed");
-
-      router.push(`/movie/${mongoId}`);
+      if (!data?._id) return alert("No Mongo ID returned");
+      router.push(`/movie/${data._id}`);
     } catch (e) {
-      alert("Import failed");
+      alert("Open failed");
     }
   };
 
@@ -591,42 +585,36 @@ function MovieRow({
   const openMovie = (movie) => {
     const id = movie._id || movie.id;
 
+    // Already in Mongo
     if (movie._id) {
       router.push(`/movie/${id}`);
       return;
     }
 
-    const mediaType =
-      movie.media_type || (movie.first_air_date || movie.name ? "tv" : "movie");
+    // TMDB item -> use /by-tmdb (safe)
+    const isTv =
+      movie.media_type === "tv" || movie.first_air_date || movie.name;
+
+    const type = isTv ? "series" : "movie";
 
     const base = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
-    const endpoint =
-      mediaType === "tv"
-        ? `${base}/api/tmdb/import-tv/${id}`
-        : `${base}/api/tmdb/import/${id}`;
+    const endpoint = `${base}/api/movies/by-tmdb/${id}?type=${type}`;
 
     const token = localStorage.getItem("token");
 
     fetch(endpoint, {
-      method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then(async (r) => {
-      const data = await r.json().catch(() => ({}));
-
-      if (!r.ok) {
-        console.log("TMDB import failed:", r.status, data?.message);
-        throw new Error(data?.message || `Import failed (${r.status})`);
-      }
-
-      return data;
-    })
-    .then((data) => {
-      const mongoId = data?.movie?._id || data?.series?._id;
-      if (mongoId) router.push(`/movie/${mongoId}`);
-      else alert(data?.message || "Import failed");
-    })
-    .catch((err) => alert(err?.message || "Import failed"));
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data?.message || `Open failed (${r.status})`);
+        return data;
+      })
+      .then((doc) => {
+        if (doc?._id) router.push(`/movie/${doc._id}`);
+        else alert("No Mongo ID returned");
+      })
+      .catch((err) => alert(err?.message || "Open failed"));
   };
 
   return (
