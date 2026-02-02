@@ -844,20 +844,25 @@ useEffect(() => {
     }, [id, API, deviceError, hasSubscription, isSeries, selectedSeason, selectedEpisode]);
 
       /* -----------------------------
-        👋 CLEAR STREAM WHEN LEAVING MOVIE PAGE
+        👋 CLEAR STREAM WHEN LEAVING MOVIE PAGE (RELIABLE)
       ----------------------------- */
       useEffect(() => {
         if (!id) return;
 
-        const API = process.env.NEXT_PUBLIC_API_URL;
+        const token = localStorage.getItem("token");
+        let deviceId = localStorage.getItem("deviceId");
+        if (!deviceId) {
+          deviceId = crypto.randomUUID();
+          localStorage.setItem("deviceId", deviceId);
+        }
 
-        return () => {
-          const token = localStorage.getItem("token");
-          const deviceId = localStorage.getItem("deviceId");
+        const stopStream = () => {
           if (!token || !deviceId) return;
 
+          // ✅ keepalive makes the request still send even when tab is closing
           fetch(`${API}/api/movies/${id}/stream/stop`, {
             method: "POST",
+            keepalive: true,
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
@@ -866,7 +871,23 @@ useEffect(() => {
             body: JSON.stringify({}),
           }).catch(() => {});
         };
-      }, [id]);
+
+        // ✅ fires on close/refresh on many browsers
+        window.addEventListener("beforeunload", stopStream);
+        // ✅ best for mobile Safari + modern browsers
+        window.addEventListener("pagehide", stopStream);
+        // ✅ when tab goes background (phone users)
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "hidden") stopStream();
+        });
+
+        // cleanup on route change/unmount
+        return () => {
+          stopStream();
+          window.removeEventListener("beforeunload", stopStream);
+          window.removeEventListener("pagehide", stopStream);
+        };
+      }, [id, API]);
 
     const posterSrc = (m) => {
       if (!m?.thumbnail) return "";
