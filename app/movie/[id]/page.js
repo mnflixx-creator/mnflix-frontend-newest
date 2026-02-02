@@ -671,7 +671,12 @@ useEffect(() => {
       setSubscriptionError("");
 
       const doRequest = async () => {
-        const res = await fetch(`${API}/api/movies/${id}/stream`, {
+        const seasonNumber = isSeries ? selectedSeason + 1 : 0;
+        const episodeNumber = isSeries ? selectedEpisode + 1 : 0;
+
+        const qs = isSeries ? `?season=${seasonNumber}&episode=${episodeNumber}` : "";
+
+        const res = await fetch(`${API}/api/movies/${id}/stream${qs}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "x-device-id": deviceId,
@@ -765,7 +770,7 @@ useEffect(() => {
     return () => {
       cancelled = true;
     };
-  }, [id, lang, API, hasSubscription]);
+  }, [id, lang, API, hasSubscription, isSeries, selectedSeason, selectedEpisode]);
 
     /* -----------------------------
       🔁 LIVE DEVICE CHECK (forced logout when removed or kicked)
@@ -785,7 +790,11 @@ useEffect(() => {
 
       const checkStatus = async () => {
         try {
-          const res = await fetch(`${API}/api/movies/${id}/stream/status`, {
+          const seasonNumber = isSeries ? selectedSeason + 1 : 0;
+          const episodeNumber = isSeries ? selectedEpisode + 1 : 0;
+          const qs = isSeries ? `?season=${seasonNumber}&episode=${episodeNumber}` : "";
+
+          const res = await fetch(`${API}/api/movies/${id}/stream/status${qs}`, {
             headers: {
               Authorization: `Bearer ${token}`,
               "x-device-id": deviceId,
@@ -832,7 +841,7 @@ useEffect(() => {
         cancelled = true;
         clearInterval(intervalId);
       };
-    }, [id, API, deviceError, hasSubscription]);
+    }, [id, API, deviceError, hasSubscription, isSeries, selectedSeason, selectedEpisode]);
 
       /* -----------------------------
         👋 CLEAR STREAM WHEN LEAVING MOVIE PAGE
