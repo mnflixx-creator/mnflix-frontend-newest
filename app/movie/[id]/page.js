@@ -63,7 +63,7 @@ export default function MoviePlayerPage(props) {
   const [recLoading, setRecLoading] = useState(false);
 
   // ✅ Treat it as series if it actually has seasons+episodes
-  const isSeries = movie?.type === "series" || movie?.type === "tv";
+  const isSeries = ["series", "tv", "anime", "kdrama", "cdrama"].includes(movie?.type);
   
     // ✅ Does this movie already have Mongolian subtitle?
   const hasMnSubtitle = useMemo(() => {
