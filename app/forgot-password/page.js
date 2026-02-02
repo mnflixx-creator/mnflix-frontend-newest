@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
   const sendOtp = async (e) => {
     e?.preventDefault?.();
 
-    if (!email) return setMsg("Please enter your email.");
+    if (!email) return setMsg("Email хаягаа оруулна уу");
 
     try {
       setLoading(true);
@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
         setCooldown(seconds);
       }
 
-      setMsg(data.message || "Something went wrong.");
+      setMsg(data.message || "Алдаа гарлаа.");
     } catch (err) {
       setMsg("Network error. Please try again.");
     } finally {
