@@ -76,7 +76,9 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin}>
             <input
-              type="email"
+              type="text"              // ✅ TV-safe (shows keyboard)
+              inputMode="email"        // ✅ still gives email keyboard on phones
+              autoComplete="email"
               placeholder="Имэйл хаяг"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
