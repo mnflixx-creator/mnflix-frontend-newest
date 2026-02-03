@@ -300,6 +300,9 @@ export default function Navbar() {
               <button onClick={() => router.push("/kdrama")} className="hover:text-white transition">
                 {lang === "mn" ? "К-Драм" : "K-Drama"}
               </button>
+              <button onClick={() => router.push("/adult")} className="hover:text-white transition">
+                {lang === "mn" ? "Насанд хүрэгчид" : "Adult"}
+              </button>
               <button onClick={() => router.push("/my-list")} className="hover:text-white transition">
                 {lang === "mn" ? "Миний жагсаалт" : "My List"}
               </button>
@@ -724,6 +727,11 @@ export default function Navbar() {
                   <ProMenuItem onClick={() => go("/series")} label={lang === "mn" ? "Цуврал" : "Series"} icon="📺" />
                   <ProMenuItem onClick={() => go("/anime")} label={lang === "mn" ? "Анимэ" : "Anime"} icon="✨" />
                   <ProMenuItem onClick={() => go("/kdrama")} label={lang === "mn" ? "К-Драм" : "K-Drama"} icon="🎭" />
+                  <ProMenuItem
+                    onClick={() => go("/adult")}
+                    label={lang === "mn" ? "Насанд хүрэгчид (18+)" : "Adult (18+)"}
+                    icon="🔞"
+                  />
                   <ProMenuItem onClick={() => go("/my-list")} label={lang === "mn" ? "Миний жагсаалт" : "My List"} icon="❤️" />
                 </div>
 
