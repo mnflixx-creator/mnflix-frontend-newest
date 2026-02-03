@@ -28,6 +28,7 @@ export default function HomePage() {
   const [animeTmdb, setAnimeTmdb] = useState([]);
   const [cdramasManual, setCdramasManual] = useState([]);
   const [animeManual, setAnimeManual] = useState([]);
+  const [adultMovies, setAdultMovies] = useState([]);
 
   const TMDB_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
@@ -154,6 +155,16 @@ export default function HomePage() {
       }
 
       loadManualAsia();
+    }, [API_BASE]);
+
+    // ✅ LOAD ADULT MOVIES (Mongo only: selected in admin)
+    useEffect(() => {
+      if (!API_BASE) return;
+
+      fetch(`${API_BASE}/api/movies/adult?limit=40`)
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => setAdultMovies(Array.isArray(data) ? data : []))
+        .catch(() => setAdultMovies([]));
     }, [API_BASE]);
   
     // ✅ LOAD RECOMMENDED FOR USER
@@ -510,6 +521,13 @@ export default function HomePage() {
         <MovieRow
           title={lang === "mn" ? "Солонгос драма" : "K-Drama"}
           movies={kdramas}
+          imgURL={imgURL}
+          router={router}
+        />
+
+        <MovieRow
+          title={lang === "mn" ? "🔞 Насанд хүрэгчидэд" : "🔞 Adults Only"}
+          movies={adultMovies}
           imgURL={imgURL}
           router={router}
         />
