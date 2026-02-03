@@ -8,6 +8,7 @@ const navItems = [
   { label: "Users", href: "/admin/users" },
   { label: "Movies", href: "/admin/movies" },
   { label: "Series", href: "/admin/series" },
+  { label: "Adult (18+)", href: "/admin/adult" },
   { label: "Home Page Editor", href: "/admin/home-editor" },
   // { label: "Trending", href: "/admin/trending" },  <-- REMOVED
   { label: "Analytics", href: "/admin/analytics" },
