@@ -526,15 +526,15 @@ export default function HomePage() {
         />
 
         <MovieRow
-          title={lang === "mn" ? "🔞 Насанд хүрэгчидэд" : "🔞 Adults Only"}
-          movies={adultMovies}
+          title={lang === "mn" ? "Анимэ" : "Anime"}
+          movies={animeTmdb}
           imgURL={imgURL}
           router={router}
         />
 
         <MovieRow
-          title={lang === "mn" ? "Анимэ" : "Anime"}
-          movies={animeTmdb}
+          title={lang === "mn" ? "🔞 Насанд хүрэгчидэд" : "🔞 Adults Only"}
+          movies={adultMovies}
           imgURL={imgURL}
           router={router}
         />
