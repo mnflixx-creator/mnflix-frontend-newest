@@ -1,21 +1,32 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add this to force new file hashes
   generateBuildId: async () => {
-    // This creates a unique build ID each time
     return `build-${Date.now()}`;
   },
-  
-  // Also add cache busting for static files
-  headers: async () => {
+
+  async headers() {
     return [
+      // ✅ 1) Static Next assets: CACHE them strongly (best for TVs)
       {
-        source: '/:path*',
+        source: "/_next/static/:path*",
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate',
-          },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+
+      // ✅ 2) Images: also ok to cache
+      {
+        source: "/_next/image/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+
+      // ✅ 3) Everything else (pages/API): revalidate
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
         ],
       },
     ];
