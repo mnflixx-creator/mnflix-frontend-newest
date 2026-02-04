@@ -1,28 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
 @import "tailwindcss";
 
 /* MNFLIX THEME – always dark mode */
 :root {
-  --background: #000000; /* Pure Netflix black */
+  --background: #000000;
   --foreground: #E5E7EB;
 }
 
-body {
-  background-color: #000;
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* Fonts */
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-body {
+html, body {
+  margin: 0;
+  padding: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', Arial, Helvetica, sans-serif;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, Helvetica, sans-serif;
+
+  /* LG TV text zoom fix */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -56,12 +49,6 @@ body {
   text-stroke: 6px #000000;
   letter-spacing: -4px;
   font-family: Arial, Helvetica, sans-serif;
-}
-
-/* Remove default spacing */
-body, html {
-  margin: 0;
-  padding: 0;
 }
 
 /* Hide scrollbar */
