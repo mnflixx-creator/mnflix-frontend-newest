@@ -12,6 +12,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
+  const isSkyworthTV = () => {
+    if (typeof navigator === "undefined") return false;
+    const ua = navigator.userAgent.toLowerCase();
+    return ua.includes("skyworth") || ua.includes("android tv") || ua.includes("aft");
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
