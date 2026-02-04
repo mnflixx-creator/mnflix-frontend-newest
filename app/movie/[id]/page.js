@@ -1506,7 +1506,11 @@ useEffect(() => {
                     season={isSeries ? selectedSeason + 1 : 1}
                     episode={isSeries ? selectedEpisode + 1 : 1}
                     subtitles={visibleSubtitles}
-                    title={movie.originalTitle || movie.title}
+                    title={
+                      movie?.type === "anime"
+                        ? movie?.title || movie?.originalTitle || ""
+                        : movie?.originalTitle || movie?.title || ""
+                    }
                     animeTitle={animeTitle}
                   />
                 ) : currentStream ? (
@@ -1522,7 +1526,11 @@ useEffect(() => {
                     season={isSeries ? selectedSeason + 1 : 1}
                     episode={isSeries ? selectedEpisode + 1 : 1}
                     subtitles={visibleSubtitles}
-                    title={movie.originalTitle || movie.title}
+                    title={
+                      movie?.type === "anime"
+                        ? movie?.title || movie?.originalTitle || ""
+                        : movie?.originalTitle || movie?.title || ""
+                    }
                     animeTitle={animeTitle}
                   />
                 ) : !movie?.tmdbId ? (
