@@ -76,13 +76,24 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin}>
             <input
-              type="text"              // ✅ TV-safe (shows keyboard)
-              inputMode="email"        // ✅ still gives email keyboard on phones
+              type="text"
+              inputMode="email"
               autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              name="email"
               placeholder="Имэйл хаяг"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 mb-4 bg-zinc-900 text-white rounded outline-none border border-transparent focus:border-blue-500"
+              className="w-full px-4 py-3 mb-4 bg-zinc-900 rounded outline-none border border-transparent focus:border-blue-500"
+              style={{
+                backgroundColor: "#18181b",      // same as zinc-900, but forced
+                color: "transparent",            // <-- important for the hack
+                textShadow: "0 0 0 #ffffff",     // <-- this makes text visible
+                WebkitTextFillColor: "#ffffff",  // still keep this
+                caretColor: "#ffffff",           // show cursor
+                opacity: 1,
+              }}
             />
 
             <div className="relative mb-4">
@@ -91,7 +102,15 @@ export default function LoginPage() {
                 placeholder="Нууц үг"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-zinc-900 text-white rounded outline-none border border-transparent focus:border-blue-500"
+                className="w-full px-4 py-3 bg-zinc-900 rounded outline-none border border-transparent focus:border-blue-500"
+                style={{
+                  backgroundColor: "#18181b",
+                  color: "transparent",
+                  textShadow: "0 0 0 #ffffff",
+                  WebkitTextFillColor: "#ffffff",
+                  caretColor: "#ffffff",
+                  opacity: 1,
+                }}
               />
 
               <span
