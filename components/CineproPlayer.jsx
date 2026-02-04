@@ -484,7 +484,7 @@ export default function CineproPlayer({
           const url = normalizeUrl(raw);
           const lowerUrl = url.toLowerCase();
 
-          // Detect stream type by URL pattern 
+          // Detect stream type by URL pattern (not provider name)
           // /cdn/s? = segment/MP4, /cdn/pl? = playlist/HLS
           const isMp4 =
             lowerUrl.includes("/cdn/s?") ||
