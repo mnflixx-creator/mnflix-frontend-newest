@@ -64,6 +64,21 @@ export default function MoviePlayerPage(props) {
 
   // ✅ Treat it as series if it actually has seasons+episodes
   const isSeries = ["series", "tv", "anime", "kdrama", "cdrama"].includes(movie?.type);
+
+  const resolveSeasonNumber = () => {
+    if (!isSeries) return 0;
+    const s = movie?.seasons?.[selectedSeason];
+    const n = s?.seasonNumber;
+    return Number.isFinite(n) && n >= 1 ? n : selectedSeason + 1;
+  };
+
+  const resolveEpisodeNumber = () => {
+    if (!isSeries) return 0;
+    const s = movie?.seasons?.[selectedSeason];
+    const ep = s?.episodes?.[selectedEpisode];
+    const n = ep?.episodeNumber;
+    return Number.isFinite(n) && n >= 1 ? n : selectedEpisode + 1;
+  };
   
     // ✅ Does this movie already have Mongolian subtitle?
   const hasMnSubtitle = useMemo(() => {
@@ -112,6 +127,9 @@ export default function MoviePlayerPage(props) {
     const token = localStorage.getItem("token");
     if (!token || !id || !movie) return;
 
+    const seasonNumber = isSeries ? resolveSeasonNumber() : null;
+    const episodeNumber = isSeries ? resolveEpisodeNumber() : null;
+
     fetch(`${API}/api/progress/save`, {
       method: "POST",
       headers: {
@@ -120,8 +138,8 @@ export default function MoviePlayerPage(props) {
       },
       body: JSON.stringify({
         movieId: id,
-        season: isSeries ? selectedSeason + 1 : null,
-        episode: isSeries ? selectedEpisode + 1 : null,
+        season: seasonNumber,
+        episode: episodeNumber,
         currentTime: 10,
         duration: 120,
       }),
@@ -214,11 +232,9 @@ export default function MoviePlayerPage(props) {
     try {
       console.log("[AUTO-MN BUTTON] start for title", movie._id, "tmdbId:", movie.tmdbId);
 
-      const isSeriesContent = isSeries;
-
       if (movie.source === "manual") {
         throw new Error(
-          isSeriesContent
+          isSeries
             ? "Manual series: please upload subtitles in admin."
             : "Manual movies: please upload subtitles in admin."
         );
@@ -229,11 +245,11 @@ export default function MoviePlayerPage(props) {
       }
 
       // figure out which ep we are on
-      const seasonNumber = isSeriesContent ? (selectedSeason || 0) + 1 : 0;
-      const episodeNumber = isSeriesContent ? (selectedEpisode || 0) + 1 : 0;
+      const seasonNumber = isSeries ? resolveSeasonNumber() : 0;
+      const episodeNumber = isSeries ? resolveEpisodeNumber() : 0;
 
       // 1) Ask Zentlify for streams/subtitles
-      const zUrl = isSeriesContent
+      const zUrl = isSeries
         ? `${API}/api/zentlify/series/${movie.tmdbId}?season=${seasonNumber}&episode=${episodeNumber}`
         : `${API}/api/zentlify/movie/${movie.tmdbId}`;
 
@@ -671,8 +687,8 @@ useEffect(() => {
       setSubscriptionError("");
 
       const doRequest = async () => {
-        const seasonNumber = isSeries ? selectedSeason + 1 : 0;
-        const episodeNumber = isSeries ? selectedEpisode + 1 : 0;
+        const seasonNumber = isSeries ? resolveSeasonNumber() : 0;
+        const episodeNumber = isSeries ? resolveEpisodeNumber() : 0;
 
         const qs = isSeries ? `?season=${seasonNumber}&episode=${episodeNumber}` : "";
 
@@ -790,8 +806,8 @@ useEffect(() => {
 
       const checkStatus = async () => {
         try {
-          const seasonNumber = isSeries ? selectedSeason + 1 : 0;
-          const episodeNumber = isSeries ? selectedEpisode + 1 : 0;
+          const seasonNumber = isSeries ? resolveSeasonNumber() : 0;
+          const episodeNumber = isSeries ? resolveEpisodeNumber() : 0;
           const qs = isSeries ? `?season=${seasonNumber}&episode=${episodeNumber}` : "";
 
           const res = await fetch(`${API}/api/movies/${id}/stream/status${qs}`, {
@@ -904,6 +920,9 @@ useEffect(() => {
       movie?.type === "anime"
         ? movie?.title || movie?.originalTitle || ""
         : "";
+
+    const resolvedSeasonNumber = isSeries ? resolveSeasonNumber() : 1;
+    const resolvedEpisodeNumber = isSeries ? resolveEpisodeNumber() : 1;
 
     // 🔹 helper: do we have proper series data?
     const hasSeriesNavigation =
@@ -1218,8 +1237,8 @@ useEffect(() => {
                               {movie.seasons.map((s, i) => (
                                 <option key={s.seasonNumber ?? i} value={i} className="bg-black">
                                   {lang === "mn"
-                                    ? `Улирал ${s.seasonNumber || i + 1}`
-                                    : `Season ${s.seasonNumber || i + 1}`}
+                                    ? `Улирал ${s.seasonNumber ?? i + 1}`
+                                    : `Season ${s.seasonNumber ?? i + 1}`}
                                 </option>
                               ))}
                             </select>
@@ -1251,8 +1270,8 @@ useEffect(() => {
                               {(movie.seasons[selectedSeason]?.episodes || []).map((ep, i) => (
                                 <option key={ep.episodeNumber ?? i} value={i} className="bg-black">
                                   {lang === "mn"
-                                    ? `Анги ${ep.episodeNumber || i + 1}`
-                                    : `Episode ${ep.episodeNumber || i + 1}`}
+                                    ? `Анги ${ep.episodeNumber ?? i + 1}`
+                                    : `Episode ${ep.episodeNumber ?? i + 1}`}
                                 </option>
                               ))}
                             </select>
@@ -1498,13 +1517,13 @@ useEffect(() => {
                   // 🟦 All TMDB titles (movie + series) use Zentlify (Zen/Sonata/Breeze/Nova/Lush/Flow)
                   <CineproPlayer
                     key={`${movie._id || movie.tmdbId}-${isSeries ? "tv" : "movie"}-s${
-                      isSeries ? selectedSeason + 1 : 1
-                    }-e${isSeries ? selectedEpisode + 1 : 1}-k${playerKey}`}
+                      resolvedSeasonNumber
+                    }-e${resolvedEpisodeNumber}-k${playerKey}`}
                     tmdbId={String(movie.tmdbId)}
                     type={movie?.type || "movie"}
                     movieType={movie?.type || "movie"}
-                    season={isSeries ? selectedSeason + 1 : 1}
-                    episode={isSeries ? selectedEpisode + 1 : 1}
+                    season={resolvedSeasonNumber}
+                    episode={resolvedEpisodeNumber}
                     subtitles={visibleSubtitles}
                     title={
                       movie?.type === "anime"
@@ -1517,14 +1536,14 @@ useEffect(() => {
                   // 🟧 Old/manual provider from DB (no Zentlify)
                   <CineproPlayer
                     key={`${movie._id || movie.tmdbId}-${isSeries ? "tv" : "movie"}-s${
-                      isSeries ? selectedSeason + 1 : 1
-                    }-e${isSeries ? selectedEpisode + 1 : 1}-k${playerKey}`}
+                      resolvedSeasonNumber
+                    }-e${resolvedEpisodeNumber}-k${playerKey}`}
                     src={currentStream}
                     tmdbId={movie.tmdbId ? String(movie.tmdbId) : ""}
                     type={movie?.type || "movie"}
                     movieType={movie?.type || "movie"}
-                    season={isSeries ? selectedSeason + 1 : 1}
-                    episode={isSeries ? selectedEpisode + 1 : 1}
+                    season={resolvedSeasonNumber}
+                    episode={resolvedEpisodeNumber}
                     subtitles={visibleSubtitles}
                     title={
                       movie?.type === "anime"
