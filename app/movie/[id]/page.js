@@ -1479,6 +1479,7 @@ useEffect(() => {
           <div className="w-full flex justify-center mt-4">
             <div className="w-full md:w-[70%] max-w-[1280px] bg-black rounded-2xl border border-white/10 overflow-hidden relative">
 
+              {/* 🔒 CLICK BLOCKER WHILE LOADING MOVIE OR ACCESS */}
               {(loadingMovie || checkingAccess) && (
                 <div className="absolute inset-0 z-20 bg-black/60 flex items-center justify-center pointer-events-auto">
                   <div className="text-center">
