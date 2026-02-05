@@ -17,6 +17,7 @@ export default function LoginPage() {
     const ua = navigator.userAgent.toLowerCase();
     return ua.includes("skyworth") || ua.includes("android tv") || ua.includes("aft");
   };
+  const tvHack = isSkyworthTV();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -54,12 +55,12 @@ export default function LoginPage() {
     <div className="relative min-h-screen w-full text-white">
       {/* BACKGROUND IMAGE */}
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center pointer-events-none"
         style={{ backgroundImage: "url('/hero.jpg')" }}
       ></div>
 
       {/* DARK OVERLAY */}
-      <div className="absolute inset-0 bg-black/70"></div>
+      <div className="absolute inset-0 bg-black/70 pointer-events-none"></div>
 
       {/* ⭐ LOGO BAR */}
       <div className="absolute top-0 left-0 w-full z-50 bg-transparent">
@@ -88,18 +89,23 @@ export default function LoginPage() {
               autoCapitalize="none"
               spellCheck={false}
               name="email"
+              autoFocus={tvHack}
               placeholder="Имэйл хаяг"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 mb-4 bg-zinc-900 rounded outline-none border border-transparent focus:border-blue-500"
-              style={{
-                backgroundColor: "#18181b",      // same as zinc-900, but forced
-                color: "transparent",            // <-- important for the hack
-                textShadow: "0 0 0 #ffffff",     // <-- this makes text visible
-                WebkitTextFillColor: "#ffffff",  // still keep this
-                caretColor: "#ffffff",           // show cursor
-                opacity: 1,
-              }}
+              style={
+                tvHack
+                  ? {
+                      backgroundColor: "#18181b",
+                      color: "transparent",
+                      textShadow: "0 0 0 #ffffff",
+                      WebkitTextFillColor: "#ffffff",
+                      caretColor: "#ffffff",
+                      opacity: 1,
+                    }
+                  : undefined
+              }
             />
 
             <div className="relative mb-4">
@@ -109,14 +115,18 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-zinc-900 rounded outline-none border border-transparent focus:border-blue-500"
-                style={{
-                  backgroundColor: "#18181b",
-                  color: "transparent",
-                  textShadow: "0 0 0 #ffffff",
-                  WebkitTextFillColor: "#ffffff",
-                  caretColor: "#ffffff",
-                  opacity: 1,
-                }}
+                style={
+                  tvHack
+                    ? {
+                        backgroundColor: "#18181b",
+                        color: "transparent",
+                        textShadow: "0 0 0 #ffffff",
+                        WebkitTextFillColor: "#ffffff",
+                        caretColor: "#ffffff",
+                        opacity: 1,
+                      }
+                    : undefined
+                }
               />
 
               <span

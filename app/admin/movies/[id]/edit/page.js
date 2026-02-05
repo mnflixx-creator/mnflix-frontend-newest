@@ -626,7 +626,7 @@ export default function EditMoviePage() {
           {movie.thumbnail ? (
             <img
               src={imgSrc(movie.thumbnail)}
-              className="w-24 h-32 object-cover rounded border border_white/10"
+              className="w-24 h-32 object-cover rounded border border-white/10"
             />
           ) : (
             <p className="text-xs text-gray-400">No thumbnail</p>
@@ -670,7 +670,7 @@ export default function EditMoviePage() {
 
         {/* SERIES/ANIME BUILDER */}
         {movie.type !== "movie" && (
-          <div className="rounded-xl border border-white/10 bg_white/5 p-4 space-y-4">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-4">
             <div>
               <label className="block mb-1">
                 IMDB ID (auto episode links)
