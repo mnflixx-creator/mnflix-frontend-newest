@@ -354,7 +354,6 @@ export default function CineproPlayer({
           episode: e,
         });
 
-        let endpoint = "";
         const encodedTitle = encodeURIComponent(safeTitle || "");
 
         // ✅ Decide endpoint SAFELY (prevents wrong /series on refresh)
@@ -366,29 +365,40 @@ export default function CineproPlayer({
         const shouldUseSeriesEndpoint =
           isTvLike && type !== "movie"; // <- important (type prop from page)
 
+        const endpoints = [];
         if (isAnime) {
-          endpoint = `/api/zentlify/anime/${tmdbId}?season=${s}&episode=${e}&title=${encodedTitle}`;
+          // Prefer anime endpoint, but fall back to series if it fails (graceful)
+          endpoints.push(
+            `/api/zentlify/anime/${tmdbId}?season=${s}&episode=${e}&title=${encodedTitle}`,
+            `/api/zentlify/series/${tmdbId}?season=${s}&episode=${e}&title=${encodedTitle}`
+          );
         } else if (shouldUseSeriesEndpoint) {
-          endpoint = `/api/zentlify/series/${tmdbId}?season=${s}&episode=${e}&title=${encodedTitle}`;
+          endpoints.push(
+            `/api/zentlify/series/${tmdbId}?season=${s}&episode=${e}&title=${encodedTitle}`
+          );
         } else {
           // ✅ default to movie endpoint
-          endpoint = `/api/zentlify/movie/${tmdbId}?title=${encodedTitle}`;
+          endpoints.push(`/api/zentlify/movie/${tmdbId}?title=${encodedTitle}`);
         }
                 
-        console.log(
-          "🔁 Zentlify reload:",
-          { reloadKey, endpoint }
-        );
+        console.log("🔁 Zentlify reload:", { reloadKey, endpoints });
 
-        const res = await fetch(`${API_BASE}${endpoint}`, {
-          headers: { "Content-Type": "application/json" },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Zentlify request failed: ${res.status}`);
+        let data = {};
+        let lastStatus = null;
+        for (const endpoint of endpoints) {
+          const res = await fetch(`${API_BASE}${endpoint}`, {
+            headers: { "Content-Type": "application/json" },
+          });
+          lastStatus = res.status;
+          if (!res.ok) continue;
+          data = await res.json().catch(() => ({}));
+          // stop on first successful response
+          if (data && (data.streams || data.sources || data.result)) break;
         }
 
-        const data = await res.json().catch(() => ({}));
+        if (!data || (!data.streams && !data.sources && !data.result)) {
+          throw new Error(`Zentlify request failed: ${lastStatus || "unknown"}`);
+        }
         console.log("Zentlify response:", data);
 
         const rawStreams =
