@@ -15,9 +15,33 @@ export const metadata = {
   },
 };
 
+const legacyDetectScript = `
+(function () {
+  try {
+    var d = document;
+    var s = d.createElement("style");
+    s.textContent = "@layer test { .__layer_test { color: red; } }";
+    d.head.appendChild(s);
+    var ok = false;
+    try {
+      ok = !!(s.sheet && s.sheet.cssRules && s.sheet.cssRules.length);
+    } catch (e) {
+      ok = false;
+    }
+    if (s.parentNode) s.parentNode.removeChild(s);
+    d.documentElement.classList.add(ok ? "supports-layer" : "no-layer");
+  } catch (e) {
+    document.documentElement.classList.add("no-layer");
+  }
+})();
+`;
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: legacyDetectScript }} />
+      </head>
       <body className="m-0 p-0 bg-black text-white">
         <ClientLayout>{children}</ClientLayout>
       </body>

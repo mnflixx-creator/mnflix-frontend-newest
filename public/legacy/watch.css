@@ -1,0 +1,21 @@
+/* Legacy styles for watch pages (movie/series) */
+
+.no-layer video {
+  width: 100%;
+  height: auto;
+}
+
+/* Reduce visual noise */
+.no-layer .backdrop-blur,
+.no-layer .backdrop-blur-sm,
+.no-layer .backdrop-blur-md,
+.no-layer .backdrop-blur-lg {
+  background-color: rgba(0,0,0,0.7);
+}
+
+/* Control panels */
+.no-layer .bg-black\/40,
+.no-layer .bg-black\/50,
+.no-layer .bg-black\/60 {
+  background-color: rgba(0,0,0,0.6);
+}

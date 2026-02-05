@@ -20,6 +20,14 @@ export default function MovieCard({ movie, progress }) {
     <div
       onClick={goToMovie}
       className="relative min-w-[160px] mr-4 cursor-pointer"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          goToMovie();
+        }
+      }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >

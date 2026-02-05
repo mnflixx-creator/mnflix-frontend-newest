@@ -1,0 +1,25 @@
+/* Legacy styles for /login and related auth screens */
+
+.no-layer .bg-black\/70 { background-color: rgba(0,0,0,0.70); }
+.no-layer .bg-black\/75 { background-color: rgba(0,0,0,0.75); }
+
+/* Login panel tweaks for old TVs */
+.no-layer .bg-black\/75 {
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.no-layer input {
+  background-color: #18181b;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.no-layer button {
+  cursor: pointer;
+}
+
+/* Reduce heavy shadows/gradients on low-end devices */
+.no-layer .shadow-lg,
+.no-layer .shadow-xl,
+.no-layer .shadow-2xl {
+  box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+}

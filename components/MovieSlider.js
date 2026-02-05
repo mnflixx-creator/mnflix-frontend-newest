@@ -22,6 +22,14 @@ export default function MovieSlider({ title, movies }) {
             <div
               className="cursor-pointer hover:scale-105 transition"
               onClick={() => console.log("clicked:", movie.title)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.currentTarget.click();
+                }
+              }}
             >
               <img
                 src={movie.thumbnail}

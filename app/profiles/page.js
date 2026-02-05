@@ -49,6 +49,14 @@ export default function ProfilesPage() {
             key={p.name}
             className="text-center cursor-pointer group"
             onClick={() => switchProfile(p.name)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                switchProfile(p.name);
+              }
+            }}
           >
             {/* Avatar Square */}
             <div
@@ -80,6 +88,14 @@ export default function ProfilesPage() {
             transition transform hover:scale-110
           "
           onClick={() => router.push("/profiles/create")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              router.push("/profiles/create");
+            }
+          }}
         >
           <svg
             className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400"

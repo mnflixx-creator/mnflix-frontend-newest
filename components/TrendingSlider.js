@@ -49,6 +49,14 @@ export default function TrendingSlider({ movies }) {
             whileHover={{ scale: 1.12 }}
             className="relative min-w-[220px] h-[330px] cursor-pointer rounded-lg overflow-hidden shadow-lg"
             onClick={() => setSelected(movie)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setSelected(movie);
+              }
+            }}
           >
             <img
               src={movie.img}

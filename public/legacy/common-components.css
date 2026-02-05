@@ -1,0 +1,65 @@
+/* Legacy component styles + custom classes */
+.no-layer .mnflix-selected-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35), 0 0 28px rgba(56, 189, 248, 0.12);
+}
+
+.no-layer .mnflix-continue-wrap {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 22px;
+  width: 90%;
+  max-width: 56rem;
+  z-index: 9999;
+}
+
+.no-layer .mnflix-continue-btn {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  font-weight: 800;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: #1e90ff;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.65);
+}
+
+.no-layer .mySwiper {
+  overflow: hidden;
+  position: relative;
+}
+
+.no-layer .drop-shadow-lg {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+}
+
+.no-layer .drop-shadow-xl {
+  box-shadow: 0 12px 24px rgba(0,0,0,0.6);
+}
+
+.no-layer .drop-shadow-\[0_0_10px_black\] {
+  box-shadow: 0 0 10px rgba(0,0,0,1);
+}
+
+.no-layer .drop-shadow-\[6px_6px_0_rgba\(0\,0\,0\,1\)\] {
+  box-shadow: 6px 6px 0 rgba(0,0,0,1);
+}
+
+/* Simple focus outline for inputs on legacy browsers */
+.no-layer input:focus,
+.no-layer textarea:focus,
+.no-layer select:focus {
+  outline: 2px solid #2ea8ff;
+  outline-offset: 2px;
+}
+
+.no-layer .border-t-white {
+  border-top: 1px solid #fff;
+}
+.no-layer .border-t-transparent {
+  border-top: 1px solid transparent;
+}

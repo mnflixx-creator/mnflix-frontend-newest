@@ -1,0 +1,44 @@
+/* Legacy styles for home + landing + category pages */
+
+/* Swiper fallback */
+.no-layer .swiper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.no-layer .swiper-wrapper {
+  display: block;
+  white-space: nowrap;
+}
+.no-layer .swiper-slide {
+  display: inline-block;
+  vertical-align: top;
+  white-space: normal;
+  margin-right: 10px;
+}
+
+/* Trending slider fallback */
+.no-layer #trend-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hero slider - keep readable text */
+.no-layer .drop-shadow-lg,
+.no-layer .drop-shadow-xl {
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+
+/* Cards */
+.no-layer .rounded-xl,
+.no-layer .rounded-lg,
+.no-layer .rounded-md {
+  border-radius: 10px;
+}
+
+/* Avoid heavy gradients on low-end devices */
+.no-layer .bg-gradient-to-t,
+.no-layer .bg-gradient-to-b,
+.no-layer .bg-gradient-to-r,
+.no-layer .bg-gradient-to-l {
+  opacity: 0.85;
+}

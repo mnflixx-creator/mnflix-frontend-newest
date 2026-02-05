@@ -10,6 +10,14 @@ export default function Row({ title, movies }) {
           <div
             key={index}
             className="min-w-[250px] max-w-[250px] cursor-pointer hover:scale-105 transition"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.currentTarget.click();
+              }
+            }}
           >
             <img
               src={movie.thumbnail}

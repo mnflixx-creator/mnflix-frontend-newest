@@ -1,0 +1,139 @@
+/* Legacy layout helpers */
+.no-layer .no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-layer .no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-layer .scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.no-layer .scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Core utility gaps for legacy engines */
+.no-layer .inset-0 {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.no-layer .left-1\/2 {
+  left: 50%;
+}
+.no-layer .top-1\/2 {
+  top: 50%;
+}
+.no-layer .-left-10 { left: -2.5rem; }
+.no-layer .-left-3 { left: -0.75rem; }
+.no-layer .-right-1 { right: -0.25rem; }
+.no-layer .-right-10 { right: -2.5rem; }
+.no-layer .-top-1 { top: -0.25rem; }
+.no-layer .h-px { height: 1px; }
+
+/* Aspect ratio fallbacks */
+.no-layer .aspect-square {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-top: 100%;
+}
+.no-layer .aspect-video,
+.no-layer .aspect-\[16\/9\] {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-top: 56.25%;
+}
+.no-layer .aspect-\[2\/3\] {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-top: 150%;
+}
+.no-layer .aspect-square > *,
+.no-layer .aspect-video > *,
+.no-layer .aspect-\[16\/9\] > *,
+.no-layer .aspect-\[2\/3\] > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Focus variants (basic) */
+.no-layer .focus\:outline-none:focus { outline: none; }
+.no-layer .outline-none { outline: none; }
+
+/* TV focus and larger hit targets */
+.no-layer :focus {
+  outline: 3px solid #2EA8FF;
+  outline-offset: 2px;
+}
+.no-layer button,
+.no-layer [role="button"],
+.no-layer a {
+  min-height: 54px;
+  min-width: 54px;
+}
+.no-layer input,
+.no-layer select,
+.no-layer textarea {
+  min-height: 40px;
+  font-size: 16px;
+}
+.no-layer body {
+  font-size: 18px;
+  line-height: 1.4;
+}
+.no-layer img {
+  image-rendering: auto;
+}
+.no-layer .focus\:border-transparent:focus { border-color: transparent; }
+.no-layer .focus\:border-blue-500:focus { border-color: #3b82f6; }
+.no-layer .focus\:border-\[\#2EA8FF\]:focus { border-color: #2EA8FF; }
+.no-layer .focus\:border-white\/30:focus { border-color: rgba(255,255,255,0.3); }
+.no-layer .focus\:ring-2:focus { box-shadow: 0 0 0 2px rgba(46,168,255,0.45); }
+.no-layer .focus\:ring-blue-500:focus { box-shadow: 0 0 0 2px rgba(59,130,246,0.45); }
+.no-layer .focus\:ring-\[\#2EA8FF\]:focus { box-shadow: 0 0 0 2px rgba(46,168,255,0.45); }
+.no-layer .focus\:w-48:focus { width: 12rem; }
+
+/* Disable heavy motion for older devices */
+.no-layer * {
+  animation: none !important;
+  transition: none !important;
+}
+.no-layer .scroll-smooth { scroll-behavior: auto; }
+.no-layer .overscroll-contain { overscroll-behavior: auto; }
+.no-layer .snap-x,
+.no-layer .snap-mandatory,
+.no-layer .snap-start {
+  scroll-snap-type: none;
+  scroll-snap-align: none;
+}
+
+/* Gradient fallbacks */
+.no-layer .bg-gradient-to-t {
+  background-image: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.35), rgba(0,0,0,0.2));
+}
+.no-layer .bg-gradient-to-b {
+  background-image: linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0.35), rgba(0,0,0,0.2));
+}
+.no-layer .bg-gradient-to-r {
+  background-image: linear-gradient(to right, rgba(0,0,0,0.85), rgba(0,0,0,0.35), rgba(0,0,0,0.2));
+}
+.no-layer .bg-gradient-to-l {
+  background-image: linear-gradient(to left, rgba(0,0,0,0.85), rgba(0,0,0,0.35), rgba(0,0,0,0.2));
+}
+
+/* Backdrop blur fallbacks */
+.no-layer .backdrop-blur,
+.no-layer .backdrop-blur-sm,
+.no-layer .backdrop-blur-md,
+.no-layer .backdrop-blur-lg {
+  background-color: rgba(0,0,0,0.6);
+}

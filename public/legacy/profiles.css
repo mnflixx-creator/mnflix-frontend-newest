@@ -1,0 +1,17 @@
+/* Legacy styles for /profiles and /add-profile */
+
+.no-layer .bg-\[\#111\] { background-color: #111111; }
+
+.no-layer .border-gray-600 { border-color: #4b5563; }
+.no-layer .border-gray-700 { border-color: #374151; }
+
+/* Profile tiles */
+.no-layer .w-28.h-28,
+.no-layer .w-40.h-40 {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.no-layer img {
+  image-rendering: auto;
+}

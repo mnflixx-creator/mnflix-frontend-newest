@@ -1,0 +1,13 @@
+/* Legacy styles for /search */
+
+.no-layer .bg-white\/5 { background-color: rgba(255,255,255,0.05); }
+.no-layer .bg-white\/10 { background-color: rgba(255,255,255,0.10); }
+.no-layer .bg-black\/50 { background-color: rgba(0,0,0,0.5); }
+
+.no-layer .border-white\/10 { border-color: rgba(255,255,255,0.10); }
+.no-layer .border-blue-500\/40 { border-color: rgba(59,130,246,0.40); }
+
+/* Ensure poster boxes keep shape */
+.no-layer .aspect-\[2\/3\] {
+  background-color: #111;
+}

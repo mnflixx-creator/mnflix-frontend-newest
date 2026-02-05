@@ -1,0 +1,22 @@
+/* Legacy styles for /account, /my-list, /subscribe */
+
+.no-layer .bg-black\/30 { background-color: rgba(0,0,0,0.30); }
+.no-layer .bg-black\/40 { background-color: rgba(0,0,0,0.40); }
+.no-layer .bg-black\/50 { background-color: rgba(0,0,0,0.50); }
+
+.no-layer .border-white\/10 { border-color: rgba(255,255,255,0.10); }
+.no-layer .border-white\/20 { border-color: rgba(255,255,255,0.20); }
+
+/* Subscription cards */
+.no-layer .mnflix-continue-wrap {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 22px;
+  width: 90%;
+  max-width: 56rem;
+}
+
+.no-layer .mnflix-continue-btn {
+  background: #1e90ff;
+}
