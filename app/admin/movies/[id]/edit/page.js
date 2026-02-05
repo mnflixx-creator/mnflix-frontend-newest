@@ -36,12 +36,7 @@ export default function EditMoviePage() {
   useEffect(() => {
     async function loadMovie() {
       try {
-        const res = await fetch(`${API_BASE}/api/movies/${movieId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-            Accept: "application/json",
-          },
-        });
+        const res = await fetch(`${API_BASE}/api/movies/${movieId}`);
 
         const data = await res.json();
 
@@ -499,15 +494,9 @@ export default function EditMoviePage() {
         {/* TYPE */}
         <div>
           <label className="block mb-1">Type</label>
-          <select
-            value={movie.type}
-            onChange={(e) => setMovie({ ...movie, type: e.target.value })}
-            className="w-full p-3 bg-black/40 border border-white/10 rounded"
-          >
-            <option value="movie">Movie</option>
-            <option value="series">Series</option>
-            <option value="anime">Anime</option>
-          </select>
+          <div className="w-full p-3 bg-black/40 border border-white/10 rounded opacity-80">
+            {movie.type}
+          </div>
         </div>
 
         {/* PLAYER LINKS (ONLY FOR MOVIE) */}
