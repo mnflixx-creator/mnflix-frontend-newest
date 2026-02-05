@@ -23,3 +23,8 @@
 .no-layer .shadow-2xl {
   box-shadow: 0 8px 20px rgba(0,0,0,0.45);
 }
+
+/* Legacy TV: ensure login box clears the logo bar */
+.no-layer .pt-50 {
+  padding-top: 8rem;
+}

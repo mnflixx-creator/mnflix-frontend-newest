@@ -34,6 +34,56 @@
 .no-layer .-top-1 { top: -0.25rem; }
 .no-layer .h-px { height: 1px; }
 
+/* Explicit text sizes used in UI */
+.no-layer .text-\[9px\] { font-size: 9px; }
+.no-layer .text-\[10px\] { font-size: 10px; }
+.no-layer .text-\[11px\] { font-size: 11px; }
+.no-layer .text-\[70px\] { font-size: 70px; }
+.no-layer .text-\[120px\] { font-size: 120px; }
+.no-layer .sm\:text-\[11px\] { font-size: 11px; }
+.no-layer .sm\:text-\[120px\] { font-size: 120px; }
+
+/* Scale utilities used on cards */
+.no-layer .scale-110 { transform: scale(1.10); }
+.no-layer .scale-105 { transform: scale(1.05); }
+.no-layer .scale-\[1\.03\] { transform: scale(1.03); }
+.no-layer .scale-\[1\.12\] { transform: scale(1.12); }
+.no-layer .scale-\[1\.17\] { transform: scale(1.17); }
+
+/* Grid column fallbacks (incl. responsive-prefixed classes) */
+.no-layer .grid-cols-4 > * { float: left; width: 25%; }
+.no-layer .grid-cols-6 > * { float: left; width: 16.6667%; }
+.no-layer .grid-cols-7 > * { float: left; width: 14.2857%; }
+
+.no-layer .sm\:grid-cols-2 > *,
+.no-layer .md\:grid-cols-2 > *,
+.no-layer .lg\:grid-cols-2 > * { float: left; width: 50%; }
+
+.no-layer .sm\:grid-cols-3 > *,
+.no-layer .md\:grid-cols-3 > *,
+.no-layer .lg\:grid-cols-3 > * { float: left; width: 33.3333%; }
+
+.no-layer .sm\:grid-cols-4 > *,
+.no-layer .md\:grid-cols-4 > *,
+.no-layer .lg\:grid-cols-4 > * { float: left; width: 25%; }
+
+.no-layer .sm\:grid-cols-5 > *,
+.no-layer .md\:grid-cols-5 > *,
+.no-layer .lg\:grid-cols-5 > * { float: left; width: 20%; }
+
+.no-layer .sm\:grid-cols-6 > *,
+.no-layer .md\:grid-cols-6 > *,
+.no-layer .lg\:grid-cols-6 > * { float: left; width: 16.6667%; }
+
+.no-layer .sm\:grid-cols-7 > *,
+.no-layer .md\:grid-cols-7 > *,
+.no-layer .lg\:grid-cols-7 > * { float: left; width: 14.2857%; }
+
+/* Accent color helpers for range inputs */
+.no-layer .accent-blue-400 { accent-color: #60a5fa; }
+.no-layer .accent-blue-600 { accent-color: #2563eb; }
+.no-layer .accent-transparent { accent-color: transparent; }
+
 /* Aspect ratio fallbacks */
 .no-layer .aspect-square {
   position: relative;

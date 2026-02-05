@@ -44,7 +44,7 @@ export default function CDramaPage() {
                 className="cursor-pointer group"
                 onClick={() => router.push(`/movie/${m._id}`)}
               >
-                <div className="relative rounded-lg overflow-hidden bg.white/5">
+                <div className="relative rounded-lg overflow-hidden bg-white/5">
                   <img
                     src={imgURL(m.thumbnail)}
                     alt={m.title}

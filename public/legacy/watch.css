@@ -5,6 +5,62 @@
   height: auto;
 }
 
+/* Player container */
+.no-layer #cinepro-player-container {
+  background-color: #000;
+}
+
+/* Controls bar legibility */
+.no-layer #cinepro-player-container select,
+.no-layer #cinepro-player-container button,
+.no-layer #cinepro-player-container input {
+  font-size: 14px;
+}
+
+.no-layer #cinepro-player-container select {
+  background-color: rgba(0,0,0,0.75);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* Range sliders: basic visibility on old engines */
+.no-layer #cinepro-player-container input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 4px;
+}
+.no-layer #cinepro-player-container input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 999px;
+}
+.no-layer #cinepro-player-container input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+  border-radius: 999px;
+  background: #60a5fa;
+}
+.no-layer #cinepro-player-container input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 999px;
+}
+.no-layer #cinepro-player-container input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #60a5fa;
+  border: none;
+}
+
+/* Subtitle box readability */
+.no-layer #cinepro-player-container .shadow-\\[0_0_12px_rgba\\(0\\,0\\,0\\,1\\)\\] {
+  box-shadow: 0 0 12px rgba(0,0,0,1);
+}
+
 /* Reduce visual noise */
 .no-layer .backdrop-blur,
 .no-layer .backdrop-blur-sm,
