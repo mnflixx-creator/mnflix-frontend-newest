@@ -362,7 +362,13 @@ export default function HomePage() {
       }
 
       try {
-        const res = await fetch(`${API_BASE}/api/movies/by-tmdb/${tmdbId}`);
+        const s = slider?.[slideIndex];
+        const isTv =
+          s?.media_type === "tv" || s?.first_air_date || s?.name;
+
+        const type = isTv ? "series" : "movie";
+
+        const res = await fetch(`${API_BASE}/api/movies/by-tmdb/${tmdbId}?type=${type}`);
         if (!res.ok) {
           setHeroOverride(null);
           return;
