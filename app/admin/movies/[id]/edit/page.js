@@ -333,7 +333,6 @@ export default function EditMoviePage() {
     formData.append("player3", movie.player3);
     formData.append("kidsOnly", movie.kidsOnly);
     formData.append("isTrending", movie.isTrending);
-    formData.append("type", movie.type);
 
     formData.append("thumbnailUrl", thumbnailUrl || "");
     formData.append("bannerUrl", bannerUrl || "");
