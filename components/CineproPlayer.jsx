@@ -275,6 +275,63 @@ export default function CineproPlayer({
     return url;
   };
 
+  const selectServer = useCallback(
+    (index) => {
+      if (index === activeServer) return;
+
+      setError("");
+      setShowServerMenu(false);
+      setIsBuffering(true);
+      setIsSourceReady(false);
+
+      // ✅ iOS MUST switch + play inside user gesture
+      if (isIOS) {
+        const video = videoRef.current;
+        const next = servers[index];
+        if (!video || !next?.file) {
+          setIsBuffering(false);
+          return;
+        }
+
+        try {
+          const url = normalizeUrl(next.file);
+
+          // reset element
+          video.pause();
+          video.removeAttribute("src");
+          video.load();
+
+          // set new source
+          video.src = url;
+          video.load();
+
+          // try to start (allowed because this function runs from the tap)
+          video.play().catch(() => {});
+        } catch (e) {}
+
+        // update UI state
+        setActiveServer(index);
+
+        // when it starts, unlock
+        const done = () => {
+          setIsSourceReady(true);
+          setIsBuffering(false);
+          video.removeEventListener("playing", done);
+          video.removeEventListener("canplay", done);
+        };
+        video.addEventListener("playing", done);
+        video.addEventListener("canplay", done);
+
+        return;
+      }
+
+      // ✅ non-iOS: normal way (effect will load Shaka or MP4)
+      setAutoPlayRequested(true);
+      setActiveServer(index);
+    },
+    [activeServer, isIOS, servers, normalizeUrl]
+  );
+
   const switchToNextServer = useCallback(
     (reason = "stream error") => {
       console.warn("Stream error, trying next server:", reason);
@@ -1267,7 +1324,17 @@ export default function CineproPlayer({
   const toggleFullscreen = useCallback(() => {
     const container = containerRef.current;
     const video = videoRef.current;
-    if (!container || !video) return;
+    if (!video) return;
+
+    // ✅ iPhone Safari: only reliable fullscreen is video.webkitEnterFullscreen()
+    if (isIOS && video.webkitEnterFullscreen) {
+      try {
+        video.webkitEnterFullscreen();
+      } catch (e) {}
+      return;
+    }
+
+    if (!container) return;
 
     const doc = document;
 
@@ -1289,33 +1356,23 @@ export default function CineproPlayer({
       doc.mozCancelFullScreen ||
       doc.msExitFullscreen;
 
-    // ENTER fullscreen
     if (!fsElement) {
       if (requestOnContainer) {
         try {
           const p = requestOnContainer.call(container);
           if (p && p.then) p.catch(() => {});
         } catch (e) {}
-        return;
-      }
-
-      // iPhone fallback
-      if (video.webkitEnterFullscreen) {
-        try {
-          video.webkitEnterFullscreen();
-        } catch (e) {}
       }
       return;
     }
 
-    // EXIT fullscreen
     if (exitFs) {
       try {
         const p = exitFs.call(doc);
         if (p && p.then) p.catch(() => {});
       } catch (e) {}
     }
-  }, []);
+  }, [isIOS]);
 
   // 🎹 Keyboard shortcuts: space, arrows, M, F
   useEffect(() => {
@@ -1763,8 +1820,7 @@ export default function CineproPlayer({
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setActiveServer(opt.index);
-                              setShowServerMenu(false);
+                              selectServer(opt.index);
                             }}
                             className={`w-full text-left px-3 py-1 text-[10px] sm:text-[11px] ${
                               activeServer === opt.index
@@ -1794,13 +1850,13 @@ export default function CineproPlayer({
 
                         if (q === "auto") {
                           const first = lushQualities[0];
-                          if (first) setActiveServer(first.index);
+                          if (first) selectServer(first.index);
                           return;
                         }
 
                         const match = lushQualities.find((o) => o.value === q);
                         if (match) {
-                          setActiveServer(match.index);
+                          selectServer(match.index);
                         }
                       }}
                       className="bg-black/70 border border-white/25 rounded-full px-2.5 sm:px-3 py-1 text-[10px] sm:text-[11px] outline-none"
