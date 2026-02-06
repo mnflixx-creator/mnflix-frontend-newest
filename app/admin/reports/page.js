@@ -4,12 +4,14 @@
 import { useEffect, useState } from "react";
 
 export default function AdminReportsPage() {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 20; // change to 15 if you want
 
   const loadReports = async () => {
     try {
@@ -69,6 +71,7 @@ export default function AdminReportsPage() {
   };
 
   useEffect(() => {
+    setPage(1);
     loadReports();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
@@ -113,7 +116,7 @@ export default function AdminReportsPage() {
 
       if (!res.ok) throw new Error("Failed");
 
-      setReports((prev) => prev.filter((r) => r._id !== id));
+      await loadReports();
     } catch (e) {
       console.error(e);
       alert("Failed to delete report");
@@ -149,6 +152,12 @@ export default function AdminReportsPage() {
     }
   };
 
+  const totalPages = Math.max(1, Math.ceil(reports.length / PER_PAGE));
+  const safePage = Math.min(page, totalPages);
+
+  const start = (safePage - 1) * PER_PAGE;
+  const currentReports = reports.slice(start, start + PER_PAGE);
+
   return (
     <div className="min-h-screen bg-black px-4 py-6 text-white">
       <h1 className="mb-4 text-2xl font-semibold">Reported Problems</h1>
@@ -181,8 +190,38 @@ export default function AdminReportsPage() {
         <p className="text-sm text-zinc-400">No reports.</p>
       )}
 
+      {!loading && reports.length > 0 && (
+        <div className="mb-4 flex items-center justify-between gap-2 text-sm">
+          <div className="text-zinc-400">
+            Showing {start + 1}-{Math.min(start + PER_PAGE, reports.length)} of {reports.length}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              disabled={safePage <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="rounded-md bg-zinc-800 px-3 py-1 disabled:opacity-40"
+            >
+              Prev
+            </button>
+
+            <div className="text-zinc-300">
+              Page {safePage} / {totalPages}
+            </div>
+
+            <button
+              disabled={safePage >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="rounded-md bg-zinc-800 px-3 py-1 disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mt-2 space-y-3">
-        {reports.map((r) => (
+        {currentReports.map((r) => (
           <div
             key={r._id}
             className={
