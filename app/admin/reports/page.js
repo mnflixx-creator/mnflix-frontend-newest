@@ -190,36 +190,6 @@ export default function AdminReportsPage() {
         <p className="text-sm text-zinc-400">No reports.</p>
       )}
 
-      {!loading && reports.length > 0 && (
-        <div className="mb-4 flex items-center justify-between gap-2 text-sm">
-          <div className="text-zinc-400">
-            Showing {start + 1}-{Math.min(start + PER_PAGE, reports.length)} of {reports.length}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              disabled={safePage <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="rounded-md bg-zinc-800 px-3 py-1 disabled:opacity-40"
-            >
-              Prev
-            </button>
-
-            <div className="text-zinc-300">
-              Page {safePage} / {totalPages}
-            </div>
-
-            <button
-              disabled={safePage >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="rounded-md bg-zinc-800 px-3 py-1 disabled:opacity-40"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-
       <div className="mt-2 space-y-3">
         {currentReports.map((r) => (
           <div
@@ -319,6 +289,37 @@ export default function AdminReportsPage() {
           </div>
         ))}
       </div>
+
+      {!loading && reports.length > 0 && (
+        <div className="mb-4 flex items-center justify-between gap-2 text-sm">
+          <div className="text-zinc-400">
+            Showing {start + 1}-{Math.min(start + PER_PAGE, reports.length)} of {reports.length}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              disabled={safePage <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="rounded-md bg-zinc-800 px-3 py-1 disabled:opacity-40"
+            >
+              Prev
+            </button>
+
+            <div className="text-zinc-300">
+              Page {safePage} / {totalPages}
+            </div>
+
+            <button
+              disabled={safePage >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="rounded-md bg-zinc-800 px-3 py-1 disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+      
     </div>
   );
 }
