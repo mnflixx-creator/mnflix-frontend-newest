@@ -137,6 +137,7 @@ export default function CineproPlayer({
 }) {
 
   const videoRef = useRef(null);
+  const containerRef = useRef(null);
 
   // 🔁 NEW: keep Shaka instance
   const shakaPlayerRef = useRef(null);
@@ -1162,7 +1163,7 @@ export default function CineproPlayer({
   }, [setupSubtitleTrack]);
 
   useEffect(() => {
-    const container = document.getElementById("cinepro-player-container");
+    const container = containerRef.current;
     if (!container) return;
 
     // 📱 MOBILE: always show controls, no auto-hide
@@ -1264,13 +1265,13 @@ export default function CineproPlayer({
   }, []);
 
   const toggleFullscreen = useCallback(() => {
-    const container = document.getElementById("cinepro-player-container");
+    const container = containerRef.current;
     const video = videoRef.current;
     if (!container || !video) return;
 
     const doc = document;
 
-    const isFs =
+    const fsElement =
       doc.fullscreenElement ||
       doc.webkitFullscreenElement ||
       doc.mozFullScreenElement ||
@@ -1288,28 +1289,31 @@ export default function CineproPlayer({
       doc.mozCancelFullScreen ||
       doc.msExitFullscreen;
 
-    if (!isFs) {
+    // ENTER fullscreen
+    if (!fsElement) {
       if (requestOnContainer) {
         try {
           const p = requestOnContainer.call(container);
           if (p && p.then) p.catch(() => {});
         } catch (e) {}
-        setIsFullscreen(true);
         return;
       }
 
+      // iPhone fallback
       if (video.webkitEnterFullscreen) {
         try {
           video.webkitEnterFullscreen();
-          setIsFullscreen(true);
         } catch (e) {}
       }
-    } else if (exitFs) {
+      return;
+    }
+
+    // EXIT fullscreen
+    if (exitFs) {
       try {
         const p = exitFs.call(doc);
         if (p && p.then) p.catch(() => {});
       } catch (e) {}
-      setIsFullscreen(false);
     }
   }, []);
 
@@ -1352,6 +1356,36 @@ export default function CineproPlayer({
     };
   }, [togglePlay, skipSeconds, toggleMute, toggleFullscreen]);
 
+  useEffect(() => {
+    const doc = document;
+
+    const onFsChange = () => {
+      const isFs =
+        !!doc.fullscreenElement ||
+        !!doc.webkitFullscreenElement ||
+        !!doc.mozFullScreenElement ||
+        !!doc.msFullscreenElement;
+
+      setIsFullscreen(isFs);
+
+      // iOS fullscreen = native captions
+      if (isFs && isIOS) {
+        setUseNativeSubtitles(true);
+      }
+      if (!isFs) {
+        setUseNativeSubtitles(false);
+      }
+    };
+
+    doc.addEventListener("fullscreenchange", onFsChange);
+    doc.addEventListener("webkitfullscreenchange", onFsChange);
+
+    return () => {
+      doc.removeEventListener("fullscreenchange", onFsChange);
+      doc.removeEventListener("webkitfullscreenchange", onFsChange);
+    };
+  }, [isIOS]);
+
   const playedPercent =
     duration && !Number.isNaN(duration)
       ? Math.min((currentTime / duration) * 100, 100)
@@ -1392,6 +1426,7 @@ export default function CineproPlayer({
       {/* VIDEO + CUSTOM CONTROLS */}
       <div className="px-2 sm:px-4 pb-4">
         <div
+          ref={containerRef}
           id="cinepro-player-container"
           className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-white/15 group"
         >
@@ -1699,7 +1734,10 @@ export default function CineproPlayer({
                   <div className="relative ml-1">
                     <button
                       type="button"
-                      onClick={() => setShowServerMenu((v) => !v)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowServerMenu((v) => !v);
+                      }}
                       className="flex items-center gap-1 bg-black/70 border border-white/25 rounded-full px-2.5 sm:px-3 py-1 text-[10px] sm:text-[11px] outline-none"
                     >
                       {isMobile ? (
@@ -1723,7 +1761,8 @@ export default function CineproPlayer({
                           <button
                             key={opt.index}
                             type="button"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setActiveServer(opt.index);
                               setShowServerMenu(false);
                             }}
