@@ -75,3 +75,60 @@
 .no-layer .bg-black\/60 {
   background-color: rgba(0,0,0,0.6);
 }
+
+/* --- Player legacy fixes --- */
+.no-layer .bg-black\/40{background-color:rgba(0,0,0,0.40)}
+.no-layer .bg-black\/50{background-color:rgba(0,0,0,0.50)}
+.no-layer .bg-black\/55{background-color:rgba(0,0,0,0.55)}
+.no-layer .bg-black\/60{background-color:rgba(0,0,0,0.60)}
+.no-layer .bg-black\/70{background-color:rgba(0,0,0,0.70)}
+.no-layer .bg-black\/75{background-color:rgba(0,0,0,0.75)}
+.no-layer .bg-black\/90{background-color:rgba(0,0,0,0.90)}
+.no-layer .bg-white\/5{background-color:rgba(255,255,255,0.05)}
+.no-layer .bg-white\/10{background-color:rgba(255,255,255,0.10)}
+.no-layer .bg-white\/20{background-color:rgba(255,255,255,0.20)}
+.no-layer .bg-white\/70{background-color:rgba(255,255,255,0.70)}
+.no-layer .bg-gray-700\/80{background-color:rgba(55,65,81,0.80)}
+.no-layer .bg-\[\#2EA8FF\]{background-color:#2EA8FF}
+.no-layer .text-white\/45{color:rgba(255,255,255,0.45)}
+.no-layer .text-white\/50{color:rgba(255,255,255,0.50)}
+.no-layer .text-white\/60{color:rgba(255,255,255,0.60)}
+.no-layer .text-white\/70{color:rgba(255,255,255,0.70)}
+.no-layer .text-white\/75{color:rgba(255,255,255,0.75)}
+.no-layer .text-white\/80{color:rgba(255,255,255,0.80)}
+.no-layer .text-white\/90{color:rgba(255,255,255,0.90)}
+.no-layer .text-gray-200\/90{color:rgba(229,231,235,0.90)}
+.no-layer .text-red-400{color:#f87171}
+.no-layer .text-\[9px\]{font-size:9px}
+.no-layer .text-\[10px\]{font-size:10px}
+.no-layer .text-\[11px\]{font-size:11px}
+.no-layer .h-\[4px\]{height:4px}
+.no-layer .h-\[52vh\]{height:52vh}
+.no-layer .max-w-\[1280px\]{max-width:1280px}
+.no-layer .max-w-\[1300px\]{max-width:1300px}
+.no-layer .max-w-\[520px\]{max-width:520px}
+.no-layer .max-w-\[90px\]{max-width:90px}
+.no-layer .max-w-\[92\%\]{max-width:92%}
+.no-layer .min-w-\[120px\]{min-width:120px}
+.no-layer .min-w-\[40px\]{min-width:40px}
+.no-layer .mb-1\.5{margin-bottom:0.375rem}
+.no-layer .px-2\.5{padding-left:0.625rem;padding-right:0.625rem}
+.no-layer .py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}
+.no-layer .border-\[\#2EA8FF\]\/40{border-width:rgba(46,168,255,0.40);border-style:solid}
+.no-layer .border-white\/10{border-color:rgba(255,255,255,0.10);border-style:solid;border-width:1px}
+.no-layer .border-white\/15{border-color:rgba(255,255,255,0.15);border-style:solid;border-width:1px}
+.no-layer .border-white\/20{border-color:rgba(255,255,255,0.20);border-style:solid;border-width:1px}
+.no-layer .border-white\/25{border-color:rgba(255,255,255,0.25);border-style:solid;border-width:1px}
+.no-layer .border-white\/30{border-color:rgba(255,255,255,0.30);border-style:solid;border-width:1px}
+.no-layer .border-\[3px\]{border-width:3px;border-style:solid}
+.no-layer .-translate-y-1\/2{transform:translateY(-50%)}
+.no-layer .top-1\/2{top:50%}
+.no-layer .transition{transition:none}
+.no-layer .transition-\[width\]{transition:none}
+.no-layer .duration-400{transition-duration:0s}
+.no-layer .animate-spin{animation:none}
+.no-layer .shadow-\[0_0_12px_rgba\(0\,0\,0\,1\)\]{box-shadow:0 0 12px rgba(0,0,0,1)}
+.no-layer .from-black{--legacy-from:black}
+.no-layer .via-black\/50{--legacy-via:rgba(0,0,0,0.5)}
+.no-layer .to-transparent{--legacy-to:transparent}
+.no-layer .bg-gradient-to-t{background-image:linear-gradient(to top, var(--legacy-from, rgba(0,0,0,0.85)), var(--legacy-via, rgba(0,0,0,0.5)), var(--legacy-to, rgba(0,0,0,0)))}
