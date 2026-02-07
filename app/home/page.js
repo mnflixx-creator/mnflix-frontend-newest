@@ -482,7 +482,20 @@ export default function HomePage() {
         {continueWatching.length > 0 && (
           <MovieRow
             title={lang === "mn" ? "▶ Үргэлжлүүлж үзэх" : "▶ Continue Watching"}
-            movies={continueWatching.map((i) => i.movieId).filter(Boolean)}
+            movies={continueWatching
+              .map((item) => {
+                const movie = item?.movieId;
+                if (!movie) return null;
+                return {
+                  ...movie,
+                  __progress: {
+                    currentTime:
+                      item?.currentTime ?? item?.progress ?? item?.position ?? 0,
+                    duration: item?.duration ?? 0,
+                  },
+                };
+              })
+              .filter(Boolean)}
             imgURL={imgURL}
             router={router}
             deleteFromContinue={deleteFromContinue}
@@ -659,16 +672,27 @@ function MovieRow({
           (movie) => {
             const movieKey = movie._id || movie.id;
             const opened = activeId === movieKey;
+            const continueProgress =
+              Number(movie?.__progress?.duration || 0) > 0
+                ? Math.max(
+                    0,
+                    Math.min(
+                      100,
+                      (Number(movie?.__progress?.currentTime || 0) /
+                        Number(movie?.__progress?.duration || 1)) *
+                        100
+                    )
+                  )
+                : 0;
 
             return (
               <div
                 key={movieKey}
-                className="
-                  relative cursor-pointer group
-                  min-w-[140px] sm:min-w-[160px] lg:min-w-[180px]
-                  snap-start
-                  rounded-md overflow-hidden
-                "
+                className={`relative cursor-pointer group snap-start rounded-md overflow-hidden ${
+                  isContinue
+                    ? "min-w-[220px] sm:min-w-[280px] lg:min-w-[320px]"
+                    : "min-w-[140px] sm:min-w-[160px] lg:min-w-[180px]"
+                }`}
                 onClick={() => {
                   // ✅ Mobile: first tap opens overlay (keeps open)
                   if (isTouch) {
@@ -684,14 +708,28 @@ function MovieRow({
                     movie.thumbnail ||
                       (movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : "")
                   )}
-                  className="
-                    w-full object-cover shadow-lg block
-                    h-[200px] sm:h-[230px] lg:h-[260px]
-                    transition-transform duration-300
-                    group-hover:scale-110
-                  "
+                  className={`w-full object-cover shadow-lg block transition-transform duration-300 group-hover:scale-110 ${
+                    isContinue
+                      ? "h-[124px] sm:h-[158px] lg:h-[180px]"
+                      : "h-[200px] sm:h-[230px] lg:h-[260px]"
+                  }`}
                   alt={movie.title || movie.name || ""}
                 />
+                {isContinue && continueProgress > 0 && (
+                  <div className="absolute bottom-0 inset-x-0 z-20 p-2 sm:p-2.5 bg-gradient-to-t from-black/85 to-transparent">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1 bg-white/25 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#2EA8FF] rounded-full"
+                          style={{ width: `${continueProgress}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-white/70 font-medium tabular-nums">
+                        {Math.round(continueProgress)}%
+                      </span>
+                    </div>
+                  </div>
+                )}
                 {/* ✅ overlay: hover on PC, tap-toggle on mobile */}
                 <div
                   className={`

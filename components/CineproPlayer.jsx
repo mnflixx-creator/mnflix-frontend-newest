@@ -2,6 +2,17 @@
 
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import shaka from "shaka-player"; // 🔁 CHANGED: use Shaka instead of Hls
+import {
+  SAVE_INTERVAL_MS,
+  SYNC_DELAY_MS,
+  FORCE_SYNC_MAX_AGE_MS,
+  POSITION_THRESHOLD,
+  MIN_SAVE_POSITION,
+  getStoredProgress,
+  saveStoredProgress,
+  clearStoredProgress,
+  isCompletedPosition,
+} from "@/lib/progressUtils";
 
 // 🔹 Friendly provider names + notes (for server buttons)
 const PROVIDER_INFO = {
@@ -128,12 +139,14 @@ function IconPause({ className = "" }) {
 export default function CineproPlayer({
   src, // backend HLS URL
   tmdbId,
+  movieId,
   type = "movie",
   movieType,
   season = 1,
   episode = 1,
   subtitles: adminSubtitles = [],
   title, // 🆕 used for Neko anime
+  onProgressSave,
 }) {
 
   const videoRef = useRef(null);
@@ -144,8 +157,20 @@ export default function CineproPlayer({
 
   const introRef = useRef(null);
   const outroRef = useRef(null);
+  const syncTimeoutRef = useRef(null);
+  const lastSyncedPositionRef = useRef(0);
+  const lastSyncTimeRef = useRef(0);
+  const pendingRestorePositionRef = useRef(null);
 
   const safeTitle = useMemo(() => title || "", [title]);
+  const normalizedSeason = useMemo(() => {
+    const value = Number(season);
+    return Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+  }, [season]);
+  const normalizedEpisode = useMemo(() => {
+    const value = Number(episode);
+    return Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+  }, [episode]);
 
   const [servers, setServers] = useState([]);
   const [activeServer, setActiveServer] = useState(0);
@@ -275,9 +300,126 @@ export default function CineproPlayer({
     return url;
   };
 
+  const syncProgressToBackend = useCallback(
+    (forceSync = false, reason = "periodic") => {
+      if (!movieId || typeof onProgressSave !== "function") return;
+
+      const video = videoRef.current;
+      if (!video) return;
+
+      const durationValue = Number(video.duration);
+      const positionValue = Number(video.currentTime);
+      if (!Number.isFinite(durationValue) || durationValue <= 0) return;
+      if (!Number.isFinite(positionValue) || positionValue < 0) return;
+
+      const position = Math.floor(positionValue);
+      const duration = Math.floor(durationValue);
+
+      const isCompleted = isCompletedPosition(position, duration);
+      if (!isCompleted && position < MIN_SAVE_POSITION) return;
+
+      const runSync = () => {
+        const currentVideo = videoRef.current;
+        if (!currentVideo) return;
+
+        const liveDuration = Number(currentVideo.duration);
+        const livePosition = Number(currentVideo.currentTime);
+        if (!Number.isFinite(liveDuration) || liveDuration <= 0) return;
+        if (!Number.isFinite(livePosition) || livePosition < 0) return;
+
+        const nextPosition = Math.floor(livePosition);
+        const nextDuration = Math.floor(liveDuration);
+        const completed = isCompletedPosition(nextPosition, nextDuration);
+        if (!completed && nextPosition < MIN_SAVE_POSITION) return;
+
+        onProgressSave(nextPosition, nextDuration, completed, reason);
+        lastSyncedPositionRef.current = nextPosition;
+        lastSyncTimeRef.current = Date.now();
+      };
+
+      const shouldSync =
+        forceSync ||
+        Math.abs(position - lastSyncedPositionRef.current) >= POSITION_THRESHOLD ||
+        Date.now() - lastSyncTimeRef.current >= FORCE_SYNC_MAX_AGE_MS ||
+        isCompleted;
+
+      if (!shouldSync) return;
+
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+        syncTimeoutRef.current = null;
+      }
+
+      if (forceSync || isCompleted) {
+        runSync();
+        return;
+      }
+
+      syncTimeoutRef.current = window.setTimeout(() => {
+        syncTimeoutRef.current = null;
+        runSync();
+      }, SYNC_DELAY_MS);
+    },
+    [movieId, onProgressSave]
+  );
+
+  const saveProgress = useCallback(
+    (forceSync = false, reason = "periodic") => {
+      if (!movieId) return;
+
+      const video = videoRef.current;
+      if (!video) return;
+
+      const durationValue = Number(video.duration);
+      const positionValue = Number(video.currentTime);
+      if (!Number.isFinite(durationValue) || durationValue <= 0) return;
+      if (!Number.isFinite(positionValue) || positionValue < 0) return;
+
+      const position = Math.floor(positionValue);
+      const duration = Math.floor(durationValue);
+
+      if (isCompletedPosition(position, duration)) {
+        clearStoredProgress(movieId, normalizedSeason, normalizedEpisode);
+      } else if (position >= MIN_SAVE_POSITION) {
+        saveStoredProgress(movieId, normalizedSeason, normalizedEpisode, position, duration);
+      }
+
+      syncProgressToBackend(forceSync, reason);
+    },
+    [movieId, normalizedSeason, normalizedEpisode, syncProgressToBackend]
+  );
+
+  const restorePlaybackPosition = useCallback(() => {
+    if (!movieId) return;
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    const durationValue = Number(video.duration);
+    if (!Number.isFinite(durationValue) || durationValue <= 0) return;
+
+    const pendingPosition = Number(pendingRestorePositionRef.current);
+    let targetPosition =
+      Number.isFinite(pendingPosition) && pendingPosition > MIN_SAVE_POSITION
+        ? Math.floor(pendingPosition)
+        : null;
+
+    if (targetPosition == null) {
+      targetPosition = getStoredProgress(movieId, normalizedSeason, normalizedEpisode);
+    }
+
+    if (!Number.isFinite(targetPosition) || targetPosition <= MIN_SAVE_POSITION) return;
+
+    const maxSeek = Math.max(durationValue - 1, 0);
+    if (maxSeek <= 0) return;
+
+    video.currentTime = Math.min(targetPosition, maxSeek);
+  }, [movieId, normalizedSeason, normalizedEpisode]);
+
   const selectServer = useCallback(
     (index) => {
       if (index === activeServer) return;
+      pendingRestorePositionRef.current = videoRef.current?.currentTime || null;
 
       setError("");
       setShowServerMenu(false);
@@ -335,6 +477,7 @@ export default function CineproPlayer({
   const switchToNextServer = useCallback(
     (reason = "stream error") => {
       console.warn("Stream error, trying next server:", reason);
+      pendingRestorePositionRef.current = videoRef.current?.currentTime || null;
 
       if (!servers.length) {
         setError("Stream error. Please refresh this page or try later.");
@@ -1096,7 +1239,10 @@ export default function CineproPlayer({
     };
 
     const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
+    const onPause = () => {
+      setIsPlaying(false);
+      saveProgress(true, "pause");
+    };
     const onTimeUpdate = () => {
       const t = video.currentTime || 0;
       setCurrentTime(t);
@@ -1122,12 +1268,17 @@ export default function CineproPlayer({
       setDuration(video.duration || 0);
       updateBuffered(); // 🔵 initial buffer
       setupSubtitleTrack();
+      restorePlaybackPosition();
+      pendingRestorePositionRef.current = null;
     };
     const onVolumeChange = () => {
       setVolume(video.muted ? 0 : video.volume);
       setIsMuted(video.muted || video.volume === 0);
     };
-    const onEnded = () => setIsPlaying(false);
+    const onEnded = () => {
+      setIsPlaying(false);
+      saveProgress(true, "ended");
+    };
     const onError = (e) => {
       console.warn("HTML5 video error:", e);
       switchToNextServer("video element error");
@@ -1152,7 +1303,50 @@ export default function CineproPlayer({
       video.removeEventListener("error", onError);
       video.removeEventListener("progress", updateBuffered); // 🔵 cleanup
     };
-  }, [setupSubtitleTrack, switchToNextServer, showSkipIntro, showSkipOutro]);
+  }, [
+    restorePlaybackPosition,
+    saveProgress,
+    setupSubtitleTrack,
+    switchToNextServer,
+    showSkipIntro,
+    showSkipOutro,
+  ]);
+
+  useEffect(() => {
+    if (!movieId) return;
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    const intervalId = window.setInterval(() => {
+      saveProgress(false, "interval");
+    }, SAVE_INTERVAL_MS);
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        saveProgress(true, "visibility-hidden");
+      }
+    };
+
+    const onBeforeUnload = () => saveProgress(true, "beforeunload");
+    const onPageHide = () => saveProgress(true, "pagehide");
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("beforeunload", onBeforeUnload);
+    window.addEventListener("pagehide", onPageHide);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      window.removeEventListener("pagehide", onPageHide);
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+        syncTimeoutRef.current = null;
+      }
+      saveProgress(true, "unmount");
+    };
+  }, [movieId, saveProgress]);
 
   // 🔄 Global buffering handler (debounced so spinner won't flash)
   useEffect(() => {
@@ -1334,9 +1528,28 @@ export default function CineproPlayer({
       return;
     }
 
-    if (!container) return;
-
     const doc = document;
+
+    const tryInvoke = (target, methodNames) => {
+      if (!target) return false;
+
+      for (const name of methodNames) {
+        const fn = target[name];
+        if (typeof fn !== "function") continue;
+
+        try {
+          const result = fn.call(target);
+          if (result && typeof result.then === "function") {
+            result.catch(() => {});
+          }
+          return true;
+        } catch {
+          // keep trying fallbacks
+        }
+      }
+
+      return false;
+    };
 
     const fsElement =
       doc.fullscreenElement ||
@@ -1344,33 +1557,46 @@ export default function CineproPlayer({
       doc.mozFullScreenElement ||
       doc.msFullscreenElement;
 
-    const requestOnContainer =
-      container.requestFullscreen ||
-      container.webkitRequestFullscreen ||
-      container.mozRequestFullScreen ||
-      container.msRequestFullscreen;
-
-    const exitFs =
-      doc.exitFullscreen ||
-      doc.webkitExitFullscreen ||
-      doc.mozCancelFullScreen ||
-      doc.msExitFullscreen;
-
     if (!fsElement) {
-      if (requestOnContainer) {
+      // Prefer container fullscreen, then fallback to video-level fullscreen.
+      const entered =
+        tryInvoke(container, [
+          "requestFullscreen",
+          "webkitRequestFullscreen",
+          "mozRequestFullScreen",
+          "msRequestFullscreen",
+        ]) ||
+        tryInvoke(video, [
+          "requestFullscreen",
+          "webkitRequestFullscreen",
+          "mozRequestFullScreen",
+          "msRequestFullscreen",
+        ]);
+
+      // Final fallback for Safari variants that only expose media fullscreen.
+      if (!entered && typeof video.webkitEnterFullscreen === "function") {
         try {
-          const p = requestOnContainer.call(container);
-          if (p && p.then) p.catch(() => {});
-        } catch (e) {}
+          video.webkitEnterFullscreen();
+        } catch {
+          // no-op
+        }
       }
       return;
     }
 
-    if (exitFs) {
+    const exited = tryInvoke(doc, [
+      "exitFullscreen",
+      "webkitExitFullscreen",
+      "mozCancelFullScreen",
+      "msExitFullscreen",
+    ]);
+
+    if (!exited && typeof video.webkitExitFullscreen === "function") {
       try {
-        const p = exitFs.call(doc);
-        if (p && p.then) p.catch(() => {});
-      } catch (e) {}
+        video.webkitExitFullscreen();
+      } catch {
+        // no-op
+      }
     }
   }, [isIOS]);
 

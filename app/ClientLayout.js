@@ -8,6 +8,7 @@ import StreamSocketClient from "./StreamSocketClient";
 import DisableDevtool from "disable-devtool";
 import LegacyCssLoader from "./LegacyCssLoader";
 import LegacySpatialNav from "./LegacySpatialNav";
+import { cleanupOldProgress } from "@/lib/progressUtils";
 
 export default function ClientLayout({ children }) {
   const pathname = usePathname();
@@ -20,6 +21,10 @@ export default function ClientLayout({ children }) {
       disableMenu: true,
       clearLog: true,
     });
+  }, []);
+
+  useEffect(() => {
+    cleanupOldProgress();
   }, []);
 
   const isAdmin = pathname.startsWith("/admin");

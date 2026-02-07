@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useLanguage } from "@/app/context/LanguageContext";
 import CineproPlayer from "@/components/CineproPlayer";
@@ -120,31 +120,42 @@ export default function MoviePlayerPage(props) {
       .catch(() => {});
   }, [id, API]);
 
-  /* -----------------------------
-     💾 SAVE PROGRESS (dummy)
-  ----------------------------- */
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token || !id || !movie) return;
+  const handleProgressSave = useCallback(
+    (currentTime, duration, completed = false, reason = "periodic") => {
+      const token = localStorage.getItem("token");
+      if (!token || !id || !movie || !API) return;
 
-    const seasonNumber = isSeries ? resolveSeasonNumber() : null;
-    const episodeNumber = isSeries ? resolveEpisodeNumber() : null;
+      const seasonNumber = isSeries ? resolveSeasonNumber() : null;
+      const episodeNumber = isSeries ? resolveEpisodeNumber() : null;
 
-    fetch(`${API}/api/progress/save`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
+      const safeCurrentTime = Math.max(0, Math.floor(Number(currentTime) || 0));
+      const safeDuration = Math.max(0, Math.floor(Number(duration) || 0));
+      if (!safeDuration) return;
+
+      const payload = {
         movieId: id,
         season: seasonNumber,
         episode: episodeNumber,
-        currentTime: 10,
-        duration: 120,
-      }),
-    }).catch(() => {});
-  }, [id, movie, selectedSeason, selectedEpisode, API, isSeries]);
+        currentTime: completed ? safeDuration : safeCurrentTime,
+        duration: safeDuration,
+        completed: !!completed,
+      };
+
+      fetch(`${API}/api/progress/save`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        keepalive:
+          reason === "beforeunload" ||
+          reason === "pagehide" ||
+          reason === "visibility-hidden",
+        body: JSON.stringify(payload),
+      }).catch(() => {});
+    },
+    [API, id, isSeries, movie, selectedEpisode, selectedSeason]
+  );
 
   /* -----------------------------
      ▶ CONTINUE WATCHING (SERIES)
@@ -921,8 +932,8 @@ useEffect(() => {
         ? movie?.title || movie?.originalTitle || ""
         : "";
 
-    const resolvedSeasonNumber = isSeries ? resolveSeasonNumber() : 1;
-    const resolvedEpisodeNumber = isSeries ? resolveEpisodeNumber() : 1;
+    const resolvedSeasonNumber = isSeries ? resolveSeasonNumber() : 0;
+    const resolvedEpisodeNumber = isSeries ? resolveEpisodeNumber() : 0;
 
     // 🔹 helper: do we have proper series data?
     const hasSeriesNavigation =
@@ -1520,11 +1531,13 @@ useEffect(() => {
                       resolvedSeasonNumber
                     }-e${resolvedEpisodeNumber}-k${playerKey}`}
                     tmdbId={String(movie.tmdbId)}
+                    movieId={movie?._id || id}
                     type={movie?.type || "movie"}
                     movieType={movie?.type || "movie"}
                     season={resolvedSeasonNumber}
                     episode={resolvedEpisodeNumber}
                     subtitles={visibleSubtitles}
+                    onProgressSave={handleProgressSave}
                     title={
                       movie?.type === "anime"
                         ? movie?.title || movie?.originalTitle || ""
@@ -1540,11 +1553,13 @@ useEffect(() => {
                     }-e${resolvedEpisodeNumber}-k${playerKey}`}
                     src={currentStream}
                     tmdbId={movie.tmdbId ? String(movie.tmdbId) : ""}
+                    movieId={movie?._id || id}
                     type={movie?.type || "movie"}
                     movieType={movie?.type || "movie"}
                     season={resolvedSeasonNumber}
                     episode={resolvedEpisodeNumber}
                     subtitles={visibleSubtitles}
+                    onProgressSave={handleProgressSave}
                     title={
                       movie?.type === "anime"
                         ? movie?.title || movie?.originalTitle || ""
