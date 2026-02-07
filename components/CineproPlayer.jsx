@@ -47,7 +47,7 @@ const PROVIDER_INFO = {
 };
 
 // 🔥 order we want to use everywhere
-const PROVIDER_PRIORITY = ["lush", "flow", "sonata", "breeze", "zen", "nova"];
+const PROVIDER_PRIORITY = ["lush", "flow", "sonata", "zen", "breeze", "nova"];
 
 /* ---------- SIMPLE ICONS ---------- */
 
@@ -662,8 +662,8 @@ export default function CineproPlayer({
           return { ...st, _providerKey: providerKey };
         });
 
-        // ⛔ TEMP: completely disable Zen provider
-        const filteredStreams = zStreams.filter((s) => s._providerKey !== "zen");
+        // ✅ include Zen again
+        const filteredStreams = zStreams;
 
         console.log(
           "Zentlify providers (normalized, Zen filtered):",
