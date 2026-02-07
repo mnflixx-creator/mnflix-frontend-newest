@@ -956,7 +956,7 @@ export default function CineproPlayer({
     if (!video || !server || !server.file) return;
 
     setError("");
-    setIsSourceReady(false); // ⏳ lock controls while this server is loading
+    setIsSourceReady(false); 
 
     introRef.current = server.intro || null;
     outroRef.current = server.outro || null;
