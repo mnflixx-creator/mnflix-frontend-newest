@@ -85,30 +85,45 @@ export default function KDramaPage() {
 
   const currentSlide = dramas[sliderIndex];
 
+  const openByTmdbWithTypeFallback = async (tmdbId, preferredType) => {
+    const tryOpen = async (contentType) => {
+      const res = await fetch(
+        `${API_BASE}/api/movies/by-tmdb/${tmdbId}?type=${contentType}`
+      );
+      const data = await res.json().catch(() => ({}));
+      return { res, data };
+    };
+
+    // 1) try requested type first
+    let { res, data } = await tryOpen(preferredType);
+    if (res.ok && data?._id) return data;
+
+    // 2) if backend says tmdb exists with different type, retry that type
+    if (res.status === 409 && data?.dbType) {
+      ({ res, data } = await tryOpen(String(data.dbType)));
+      if (res.ok && data?._id) return data;
+    }
+
+    const message =
+      data?.message ||
+      `Open failed (${res.status})`;
+    throw new Error(message);
+  };
+
   // ✅ When click K-drama → ensure Mongo doc & open /movie/[id]
   const handleOpenDrama = async (tmdbId) => {
     if (!API_BASE || !tmdbId) return;
 
     try {
-        const res = await fetch(
-            `${API_BASE}/api/movies/by-tmdb/${tmdbId}?type=kdrama`
-        );
-
-        if (!res.ok) {
-            console.error("Failed to fetch by-tmdb", await res.text());
-            alert("Үзэхэд алдаа гарлаа.");
-            return;
-        }
-
-        const data = await res.json();
-        if (data && data._id) {
-            router.push(`/movie/${data._id}`);
-        } else {
-            alert("Movie ID not found");
-        }
+      const data = await openByTmdbWithTypeFallback(tmdbId, "kdrama");
+      if (data?._id) {
+        router.push(`/movie/${data._id}`);
+      } else {
+        alert("Movie ID not found");
+      }
     } catch (err) {
-        console.error("open kdrama error", err);
-        alert("Сүлжээний алдаа.");
+      console.error("open kdrama error", err);
+      alert("Сүлжээний алдаа.");
     }
   };
 

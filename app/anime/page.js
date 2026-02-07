@@ -84,21 +84,35 @@ export default function AnimePage() {
         );
 
   const currentSlide = anime[sliderIndex];
+
+  const openByTmdbWithTypeFallback = async (tmdbId, preferredType) => {
+    const tryOpen = async (contentType) => {
+      const res = await fetch(
+        `${API_BASE}/api/movies/by-tmdb/${tmdbId}?type=${contentType}`
+      );
+      const data = await res.json().catch(() => ({}));
+      return { res, data };
+    };
+
+    let { res, data } = await tryOpen(preferredType);
+    if (res.ok && data?._id) return data;
+
+    if (res.status === 409 && data?.dbType) {
+      ({ res, data } = await tryOpen(String(data.dbType)));
+      if (res.ok && data?._id) return data;
+    }
+
+    const message =
+      data?.message ||
+      `Open failed (${res.status})`;
+    throw new Error(message);
+  };
+
   const handleOpenAnime = async (tmdbId) => {
     if (!API_BASE || !tmdbId) return;
 
     try {
-      const res = await fetch(
-        `${API_BASE}/api/movies/by-tmdb/${tmdbId}?type=kdrama`
-      );
-
-      if (!res.ok) {
-        console.error("Failed to fetch by-tmdb", await res.text());
-        alert("Үзэхэд алдаа гарлаа.");
-        return;
-      }
-
-      const data = await res.json();
+      const data = await openByTmdbWithTypeFallback(tmdbId, "anime");
       if (data && data._id) {
         router.push(`/movie/${data._id}`);
       } else {

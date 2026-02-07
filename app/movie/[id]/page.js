@@ -258,11 +258,16 @@ export default function MoviePlayerPage(props) {
       // figure out which ep we are on
       const seasonNumber = isSeries ? resolveSeasonNumber() : 0;
       const episodeNumber = isSeries ? resolveEpisodeNumber() : 0;
+      const titleForSearch = encodeURIComponent(
+        movie?.type === "anime"
+          ? movie?.title || movie?.originalTitle || ""
+          : movie?.originalTitle || movie?.title || ""
+      );
 
       // 1) Ask Zentlify for streams/subtitles
       const zUrl = isSeries
-        ? `${API}/api/zentlify/series/${movie.tmdbId}?season=${seasonNumber}&episode=${episodeNumber}`
-        : `${API}/api/zentlify/movie/${movie.tmdbId}`;
+        ? `${API}/api/zentlify/series/${movie.tmdbId}?season=${seasonNumber}&episode=${episodeNumber}&title=${titleForSearch}`
+        : `${API}/api/zentlify/movie/${movie.tmdbId}?title=${titleForSearch}`;
 
       const zRes = await fetchWithTimeout(zUrl, {}, 25000);
       if (!zRes.ok) {
