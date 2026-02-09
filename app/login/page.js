@@ -33,10 +33,15 @@ export default function LoginPage() {
       return setMsg("API URL тохируулагдаагүй байна.");
     }
 
+    const deviceId = localStorage.getItem("deviceId") || "web-device";
+
     const res = await fetch(`${API_URL}/api/auth/login`, {
       method: "POST",
-      credentials: "include", // ✅ ADD THIS LINE
-      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "x-device-id": deviceId,
+      },
       body: JSON.stringify({ email, password }),
     });
 
