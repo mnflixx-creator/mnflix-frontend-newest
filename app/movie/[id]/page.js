@@ -1171,9 +1171,7 @@ useEffect(() => {
           {/* BUTTONS (STACK ON MOBILE) */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4 sm:mt-6">
             <button
-              onClick={() =>
-                document.getElementById("moviePlayer")?.scrollIntoView({ behavior: "smooth" })
-              }
+              onClick={() => router.push(`/play/${id}`)}
               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white text-black font-semibold px-5 sm:px-6 py-3 rounded-md hover:bg-gray-200 transition text-base sm:text-lg"
             >
               ▶ Үзэх
