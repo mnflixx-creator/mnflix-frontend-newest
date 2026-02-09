@@ -36,7 +36,7 @@ export function PlayerComponent({
 }: PlayerComponentProps) {
   const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
   
   const [videoReady, setVideoReady] = useState(false)
@@ -112,7 +112,12 @@ export function PlayerComponent({
         
         // Set subtitles if available
         if (data.subtitles && data.subtitles.length > 0) {
-          setSubtitles(data.subtitles)
+          // Map ZenflifySubtitle to Subtitle format
+          const formattedSubtitles = data.subtitles.map(sub => ({
+            ...sub,
+            kind: (sub.kind || 'subtitles') as 'subtitles' | 'captions'
+          }))
+          setSubtitles(formattedSubtitles)
         }
         
         // Restore watch progress if available
@@ -191,14 +196,7 @@ export function PlayerComponent({
   }
 
   const handleVideoReady = (video: HTMLVideoElement) => {
-    if (videoRef.current !== video) {
-      // Update the ref indirectly
-      Object.defineProperty(videoRef, 'current', {
-        value: video,
-        writable: true,
-        configurable: true
-      })
-    }
+    videoRef.current = video
     setVideoReady(true)
   }
 
@@ -238,21 +236,12 @@ export function PlayerComponent({
       <div className="absolute inset-0" onClick={handleVideoClick}>
         <PlayerDisplay
           src={currentSource.url}
+          subtitles={subtitles}
+          currentSubtitle={currentSubtitle}
           onReady={handleVideoReady}
           onError={(err) => setError(err)}
           className="w-full h-full object-contain"
         />
-        
-        {/* Subtitle track */}
-        {currentSubtitle && videoRef.current && (
-          <track
-            kind="subtitles"
-            src={currentSubtitle.url}
-            srcLang={currentSubtitle.language}
-            label={currentSubtitle.label}
-            default
-          />
-        )}
       </div>
 
       {/* Buffering Indicator */}

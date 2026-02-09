@@ -3,15 +3,25 @@
  */
 
 import { useEffect, useRef } from 'react'
+import { Subtitle } from '../../../types/player'
 
 interface VideoPlayerProps {
   src: string
+  subtitles?: Subtitle[]
+  currentSubtitle?: Subtitle | null
   onReady?: (video: HTMLVideoElement) => void
   onError?: (error: string) => void
   className?: string
 }
 
-export function VideoPlayer({ src, onReady, onError, className }: VideoPlayerProps) {
+export function VideoPlayer({ 
+  src, 
+  subtitles = [],
+  currentSubtitle,
+  onReady, 
+  onError, 
+  className 
+}: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -42,6 +52,17 @@ export function VideoPlayer({ src, onReady, onError, className }: VideoPlayerPro
       className={className}
       playsInline
       preload="metadata"
-    />
+    >
+      {subtitles.map((subtitle, index) => (
+        <track
+          key={index}
+          kind={subtitle.kind}
+          src={subtitle.url}
+          srcLang={subtitle.language}
+          label={subtitle.label}
+          default={currentSubtitle?.url === subtitle.url}
+        />
+      ))}
+    </video>
   )
 }

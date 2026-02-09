@@ -1,4 +1,5 @@
 import apiClient from '../utils/api';
+import { Subtitle } from '../types/player';
 
 export interface ZenflifyStream {
   id: number;
@@ -8,11 +9,18 @@ export interface ZenflifyStream {
   quality: string;
 }
 
+export interface ZenflifySubtitle {
+  url: string;
+  label: string;
+  language: string;
+  kind?: 'subtitles' | 'captions';
+}
+
 export interface ZenflifyResponse {
   streams?: ZenflifyStream[];
   sources?: ZenflifyStream[];
-  subtitles?: any[];
-  captions?: any[];
+  subtitles?: ZenflifySubtitle[];
+  captions?: ZenflifySubtitle[];
   count?: number;
   cached?: boolean;
   fresh?: boolean;
@@ -117,10 +125,13 @@ export async function getWatchProgress(movieId: string): Promise<WatchProgress |
 /**
  * Get subtitle files
  */
-export async function getSubtitles(movieId: string): Promise<any[]> {
+export async function getSubtitles(movieId: string): Promise<Subtitle[]> {
   try {
     const response = await apiClient.get(`/api/subtitles/${movieId}`);
-    return response.data;
+    return response.data.map((sub: ZenflifySubtitle) => ({
+      ...sub,
+      kind: sub.kind || 'subtitles'
+    }));
   } catch (error) {
     console.error('Failed to fetch subtitles:', error);
     return [];

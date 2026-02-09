@@ -4,15 +4,25 @@
 
 import Hls from 'hls.js'
 import { useEffect, useRef, useState } from 'react'
+import { Subtitle } from '../../../types/player'
 
 interface HLSPlayerProps {
   src: string
+  subtitles?: Subtitle[]
+  currentSubtitle?: Subtitle | null
   onReady?: (video: HTMLVideoElement) => void
   onError?: (error: string) => void
   className?: string
 }
 
-export function HLSPlayer({ src, onReady, onError, className }: HLSPlayerProps) {
+export function HLSPlayer({ 
+  src, 
+  subtitles = [],
+  currentSubtitle,
+  onReady, 
+  onError, 
+  className 
+}: HLSPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const hlsRef = useRef<Hls | null>(null)
   const [isHlsSupported, setIsHlsSupported] = useState(true)
@@ -89,6 +99,17 @@ export function HLSPlayer({ src, onReady, onError, className }: HLSPlayerProps) 
       className={className}
       playsInline
       preload="metadata"
-    />
+    >
+      {subtitles.map((subtitle, index) => (
+        <track
+          key={index}
+          kind={subtitle.kind}
+          src={subtitle.url}
+          srcLang={subtitle.language}
+          label={subtitle.label}
+          default={currentSubtitle?.url === subtitle.url}
+        />
+      ))}
+    </video>
   )
 }
