@@ -11,6 +11,30 @@ import {
 // Provider configuration
 const PROVIDER_PRIORITY = ["lush", "flow", "sonata", "zen", "breeze", "nova"];
 
+// Helper to detect provider from stream data
+const detectProvider = (st) => {
+  const rawProvider = (st.provider || "").toLowerCase();
+  const rawName = (st.name || st.title || "").toLowerCase();
+
+  const providers = [
+    { key: "lush", matches: ["lush", "atlas"] },
+    { key: "flow", matches: ["flow"] },
+    { key: "sonata", matches: ["sonata"] },
+    { key: "breeze", matches: ["breeze"] },
+    { key: "nova", matches: ["nova"] },
+    { key: "zen", matches: ["zen"] },
+    { key: "neko", matches: ["neko"] },
+  ];
+
+  for (const provider of providers) {
+    if (provider.matches.some(m => rawProvider.includes(m) || rawName.includes(m))) {
+      return provider.key;
+    }
+  }
+
+  return "unknown";
+};
+
 /**
  * PStreamPlayer - A P-Stream styled video player component
  * Integrates with Zenflify provider for streaming
@@ -139,38 +163,13 @@ export default function PStreamPlayer({
 
         // Normalize streams
         const normalizedStreams = (Array.isArray(rawStreams) ? rawStreams : [])
-          .map((st, i) => {
-            const rawProvider = (st.provider || "").toLowerCase();
-            const rawName = (st.name || st.title || "").toLowerCase();
-
-            let providerKey = "";
-            if (rawProvider.includes("lush") || rawName.includes("lush") ||
-                rawProvider.includes("atlas") || rawName.includes("atlas")) {
-              providerKey = "lush";
-            } else if (rawProvider.includes("flow") || rawName.includes("flow")) {
-              providerKey = "flow";
-            } else if (rawProvider.includes("sonata") || rawName.includes("sonata")) {
-              providerKey = "sonata";
-            } else if (rawProvider.includes("breeze") || rawName.includes("breeze")) {
-              providerKey = "breeze";
-            } else if (rawProvider.includes("nova") || rawName.includes("nova")) {
-              providerKey = "nova";
-            } else if (rawProvider.includes("zen") || rawName.includes("zen")) {
-              providerKey = "zen";
-            } else if (rawProvider.includes("neko") || rawName.includes("neko")) {
-              providerKey = "neko";
-            } else {
-              providerKey = "unknown";
-            }
-
-            return {
-              id: i + 1,
-              name: st.name || st.title || `Server ${i + 1}`,
-              url: st.url || st.file || st.src || "",
-              provider: providerKey,
-              quality: st.quality || "auto",
-            };
-          })
+          .map((st, i) => ({
+            id: i + 1,
+            name: st.name || st.title || `Server ${i + 1}`,
+            url: st.url || st.file || st.src || "",
+            provider: detectProvider(st),
+            quality: st.quality || "auto",
+          }))
           .filter((s) => s.url);
 
         // Sort by provider priority
@@ -251,7 +250,9 @@ export default function PStreamPlayer({
         const progressKey = movieId ? `progress_${movieId}` : null;
         if (progressKey) {
           const stored = getStoredProgress(progressKey);
-          if (stored && stored.position > 0 && !isCompletedPosition(stored.position, video.duration)) {
+          if (stored && stored.position > 0 && 
+              isFinite(video.duration) && 
+              !isCompletedPosition(stored.position, video.duration)) {
             video.currentTime = stored.position;
           }
         }
