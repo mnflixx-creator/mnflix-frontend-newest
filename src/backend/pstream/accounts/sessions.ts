@@ -1,7 +1,7 @@
 import { ofetch } from "ofetch";
 
 import { getAuthHeaders } from "src/backend/pstream/accounts/auth";
-import { AccountWithToken } from "src/stores/auth";
+import { AccountWithToken } from "@/stores/auth";
 
 export interface SessionResponse {
   id: string;

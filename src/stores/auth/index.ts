@@ -33,7 +33,7 @@ export interface AuthStore {
   setProxySet(urls: null | string[]): void;
 }
 
-export type AuthState = ReturnType<typeof useAuthStore.getState>;
+export type AuthState = AuthStore;
 
 export const useAuthStore = create(
   persist(

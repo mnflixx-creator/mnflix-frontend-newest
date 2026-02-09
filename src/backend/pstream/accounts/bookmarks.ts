@@ -2,7 +2,7 @@ import { ofetch } from "ofetch";
 
 import { getAuthHeaders } from "src/backend/pstream/accounts/auth";
 import { BookmarkResponse } from "src/backend/pstream/accounts/user";
-import { AccountWithToken } from "src/stores/auth";
+import { AccountWithToken } from "@/stores/auth";
 import { BookmarkMediaItem } from "src/stores/bookmarks";
 
 export interface BookmarkMetaInput {

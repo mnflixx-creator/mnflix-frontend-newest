@@ -2,7 +2,7 @@ import { ofetch } from "ofetch";
 
 import { getAuthHeaders } from "src/backend/pstream/accounts/auth";
 import { ProgressResponse } from "src/backend/pstream/accounts/user";
-import { AccountWithToken } from "src/stores/auth";
+import { AccountWithToken } from "@/stores/auth";
 import { ProgressMediaItem, ProgressUpdateItem } from "src/stores/progress-pstream";
 
 export interface ProgressInput {

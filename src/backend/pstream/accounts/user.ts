@@ -1,7 +1,7 @@
 import { ofetch } from "ofetch";
 
 import { SessionResponse, getAuthHeaders } from "src/backend/pstream/accounts/auth";
-import { AccountWithToken } from "src/stores/auth";
+import { AccountWithToken } from "@/stores/auth";
 import { BookmarkMediaItem } from "src/stores/bookmarks";
 import { ProgressMediaItem } from "src/stores/progress-pstream";
 import { WatchHistoryItem } from "@/stores/watchHistory";

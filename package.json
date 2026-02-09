@@ -55,6 +55,11 @@
     "zustand": "^4.4.0"
   },
   "devDependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@types/chromecast-caf-sender": "^1.0.11",
     "@types/fscreen": "^1.0.4",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

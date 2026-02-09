@@ -1,4 +1,4 @@
-import { AccountWithToken } from "src/stores/auth";
+import { AccountWithToken } from "@/stores/auth";
 
 interface PlayerState {
   isPlaying: boolean;

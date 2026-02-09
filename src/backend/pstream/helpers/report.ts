@@ -6,7 +6,7 @@ import { useCallback } from "react";
 import { isExtensionActiveCached } from "src/backend/pstream/extension/messaging";
 import { ScrapingItems, ScrapingSegment } from "src/hooks/pstream/useProviderScrape";
 import { conf } from "@/setup/config";
-import { useAuthStore } from "src/stores/auth";
+import { useAuthStore } from "@/stores/auth";
 import { PlayerMeta } from "src/stores/player-pstream/slices/source";
 
 // for anybody who cares - these are anonymous metrics.
