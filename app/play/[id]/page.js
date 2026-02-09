@@ -239,6 +239,11 @@ export default function PlayPage() {
       title={playerTitle}
       onBack={handleBack}
       onProgressSave={handleProgressSave}
+      seasons={isSeries ? movie.seasons : null}
+      selectedSeason={selectedSeason}
+      selectedEpisode={selectedEpisode}
+      onSeasonChange={setSelectedSeason}
+      onEpisodeChange={setSelectedEpisode}
     />
   );
 }
