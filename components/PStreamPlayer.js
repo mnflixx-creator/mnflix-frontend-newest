@@ -463,7 +463,7 @@ export default function PStreamPlayer({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showKeyboardHelp]);
+  }, [showKeyboardHelp, toggleSubtitles]);
 
   // Player controls
   const togglePlay = () => {
@@ -560,13 +560,30 @@ export default function PStreamPlayer({
     }
   };
 
-  const toggleSubtitles = () => {
-    if (currentSubtitle === null && subtitles.length > 0) {
-      handleSubtitleChange(subtitles[0]);
-    } else {
-      handleSubtitleChange(null);
-    }
-  };
+  const toggleSubtitles = useCallback(() => {
+    setCurrentSubtitle((current) => {
+      const player = shakaPlayerRef.current;
+      if (!player) return current;
+
+      if (current === null && subtitles.length > 0) {
+        const newSubtitle = subtitles[0];
+        // Enable text track and select the appropriate one
+        player.setTextTrackVisibility(true);
+        const tracks = player.getTextTracks();
+        const matchingTrack = tracks.find(
+          (track) => track.language === newSubtitle.language || track.label === newSubtitle.label
+        );
+        if (matchingTrack) {
+          player.selectTextTrack(matchingTrack);
+        }
+        return newSubtitle;
+      } else {
+        // Disable all text tracks
+        player.setTextTrackVisibility(false);
+        return null;
+      }
+    });
+  }, [subtitles]);
 
   const togglePictureInPicture = async () => {
     const video = videoRef.current;

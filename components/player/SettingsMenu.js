@@ -68,7 +68,7 @@ export default function SettingsMenu({
           ))}
 
           {(!subtitles || subtitles.length === 0) && (
-            <div className={styles.dropdownItem} style={{ cursor: 'default', color: 'var(--player-disabled)' }}>
+            <div className={styles.dropdownItemDisabled}>
               No subtitles available
             </div>
           )}

@@ -436,10 +436,15 @@
   font-weight: 500;
 }
 
-.episodeItem {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.dropdownItemDisabled {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--player-disabled);
+  cursor: default;
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 14px;
 }
 
 .episodeTitle {

@@ -27,7 +27,7 @@ export default function EpisodeSelector({
   const hasPreviousEpisode = selectedEpisode > 0 || selectedSeason > 0;
 
   return (
-    <div className={styles.controlsRow} style={{ gap: '8px' }}>
+    <div className={styles.controlsRowCompact}>
       {/* Previous episode button */}
       {hasPreviousEpisode && (
         <button
