@@ -31,13 +31,12 @@ interface PlayerComponentProps {
 export function PlayerComponent({
   movieId,
   title,
-  poster,
   onBack,
 }: PlayerComponentProps) {
   const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const controlsTimeoutRef = useRef<NodeJS.Timeout>()
+  const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
   
   const [videoReady, setVideoReady] = useState(false)
 
@@ -83,7 +82,7 @@ export function PlayerComponent({
 
   // Hooks
   useVideoEvents(videoRef)
-  useKeyboard(videoRef)
+  useKeyboard()
   const { toggleFullscreen: handleFullscreenToggle } = useFullscreen(containerRef)
 
   // Load streaming sources
@@ -182,7 +181,14 @@ export function PlayerComponent({
   }
 
   const handleVideoReady = (video: HTMLVideoElement) => {
-    videoRef.current = video
+    if (videoRef.current !== video) {
+      // Update the ref indirectly
+      Object.defineProperty(videoRef, 'current', {
+        value: video,
+        writable: true,
+        configurable: true
+      })
+    }
     setVideoReady(true)
   }
 

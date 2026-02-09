@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 import { usePlayerStore } from '../../../stores/player/store'
 import { createKeyboardHandler } from '../utils/keyboard'
 
-export function useKeyboard(videoRef: React.RefObject<HTMLVideoElement>) {
+export function useKeyboard() {
   const {
     togglePlay,
     toggleFullscreen,

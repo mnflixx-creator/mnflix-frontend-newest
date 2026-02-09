@@ -31,6 +31,7 @@
     "zustand": "^4.4.0"
   },
   "devDependencies": {
+    "@types/fscreen": "^1.0.4",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
