@@ -117,6 +117,170 @@ export default function PStreamPlayer({
     }
   }, [isPlaying]);
 
+  // Toggle subtitles on/off
+  const toggleSubtitles = useCallback(() => {
+    setCurrentSubtitle((current) => {
+      const player = shakaPlayerRef.current;
+      if (!player) return current;
+
+      if (current === null && subtitles.length > 0) {
+        const newSubtitle = subtitles[0];
+        // Enable text track and select the appropriate one
+        player.setTextTrackVisibility(true);
+        const tracks = player.getTextTracks();
+        const matchingTrack = tracks.find(
+          (track) => track.language === newSubtitle.language || track.label === newSubtitle.label
+        );
+        if (matchingTrack) {
+          player.selectTextTrack(matchingTrack);
+        }
+        return newSubtitle;
+      } else {
+        // Disable all text tracks
+        player.setTextTrackVisibility(false);
+        return null;
+      }
+    });
+  }, [subtitles]);
+
+  // Player control functions
+  const togglePlay = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play();
+      setShowCenterPlay(false);
+    } else {
+      video.pause();
+    }
+  }, []);
+
+  const seek = useCallback((seconds) => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!containerRef.current) return;
+
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }, []);
+
+  const handleProgressClick = (e) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    video.currentTime = percent * video.duration;
+  };
+
+  const handleVolumeChange = (e) => {
+    const video = videoRef.current;
+    if (!video) return;
+    const newVolume = parseFloat(e.target.value);
+    video.volume = newVolume;
+    video.muted = newVolume === 0;
+  };
+
+  const switchServer = () => {
+    const nextIndex = (activeServer + 1) % servers.length;
+    setActiveServer(nextIndex);
+  };
+
+  const handleSpeedChange = (speed) => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.playbackRate = speed;
+    setPlaybackSpeed(speed);
+  };
+
+  const handleQualityChange = (quality) => {
+    setCurrentQuality(quality);
+    // Quality change would require re-loading the stream with the appropriate quality
+    // For now, we just update the state
+  };
+
+  const handleSubtitleChange = (subtitle) => {
+    setCurrentSubtitle(subtitle);
+    
+    const player = shakaPlayerRef.current;
+    if (!player) return;
+
+    if (subtitle === null) {
+      // Disable all text tracks
+      player.setTextTrackVisibility(false);
+    } else {
+      // Enable text track and select the appropriate one
+      player.setTextTrackVisibility(true);
+      
+      const tracks = player.getTextTracks();
+      const matchingTrack = tracks.find(
+        (track) => track.language === subtitle.language || track.label === subtitle.label
+      );
+      
+      if (matchingTrack) {
+        player.selectTextTrack(matchingTrack);
+      }
+    }
+  };
+
+  const togglePictureInPicture = async () => {
+    const video = videoRef.current;
+    if (!video || !document.pictureInPictureEnabled) return;
+
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        await video.requestPictureInPicture();
+      }
+    } catch (err) {
+      console.error("PiP error:", err);
+    }
+  };
+
+  const handleNextEpisode = () => {
+    if (!seasons || !onEpisodeChange || !onSeasonChange) return;
+
+    const currentSeasonEpisodes = seasons[selectedSeason]?.episodes || [];
+    
+    if (selectedEpisode < currentSeasonEpisodes.length - 1) {
+      // Move to next episode in same season
+      onEpisodeChange(selectedEpisode + 1);
+    } else if (selectedSeason < seasons.length - 1) {
+      // Move to first episode of next season
+      onSeasonChange(selectedSeason + 1);
+      onEpisodeChange(0);
+    }
+  };
+
+  const handlePreviousEpisode = () => {
+    if (!seasons || !onEpisodeChange || !onSeasonChange) return;
+
+    if (selectedEpisode > 0) {
+      // Move to previous episode in same season
+      onEpisodeChange(selectedEpisode - 1);
+    } else if (selectedSeason > 0) {
+      // Move to last episode of previous season
+      const prevSeasonEpisodes = seasons[selectedSeason - 1]?.episodes || [];
+      onSeasonChange(selectedSeason - 1);
+      onEpisodeChange(Math.max(0, prevSeasonEpisodes.length - 1));
+    }
+  };
+
   // Load streaming sources from Zenflify
   useEffect(() => {
     let cancelled = false;
@@ -463,171 +627,7 @@ export default function PStreamPlayer({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showKeyboardHelp, toggleSubtitles]);
-
-  // Player controls
-  const togglePlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (video.paused) {
-      video.play();
-      setShowCenterPlay(false);
-    } else {
-      video.pause();
-    }
-  };
-
-  const seek = (seconds) => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
-  };
-
-  const handleProgressClick = (e) => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
-    video.currentTime = percent * video.duration;
-  };
-
-  const handleVolumeChange = (e) => {
-    const video = videoRef.current;
-    if (!video) return;
-    const newVolume = parseFloat(e.target.value);
-    video.volume = newVolume;
-    video.muted = newVolume === 0;
-  };
-
-  const toggleMute = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = !video.muted;
-  };
-
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
-  };
-
-  const switchServer = () => {
-    const nextIndex = (activeServer + 1) % servers.length;
-    setActiveServer(nextIndex);
-  };
-
-  // New control functions
-  const handleSpeedChange = (speed) => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.playbackRate = speed;
-    setPlaybackSpeed(speed);
-  };
-
-  const handleQualityChange = (quality) => {
-    setCurrentQuality(quality);
-    // Quality change would require re-loading the stream with the appropriate quality
-    // For now, we just update the state
-  };
-
-  const handleSubtitleChange = (subtitle) => {
-    setCurrentSubtitle(subtitle);
-    
-    const player = shakaPlayerRef.current;
-    if (!player) return;
-
-    if (subtitle === null) {
-      // Disable all text tracks
-      player.setTextTrackVisibility(false);
-    } else {
-      // Enable text track and select the appropriate one
-      player.setTextTrackVisibility(true);
-      
-      const tracks = player.getTextTracks();
-      const matchingTrack = tracks.find(
-        (track) => track.language === subtitle.language || track.label === subtitle.label
-      );
-      
-      if (matchingTrack) {
-        player.selectTextTrack(matchingTrack);
-      }
-    }
-  };
-
-  const toggleSubtitles = useCallback(() => {
-    setCurrentSubtitle((current) => {
-      const player = shakaPlayerRef.current;
-      if (!player) return current;
-
-      if (current === null && subtitles.length > 0) {
-        const newSubtitle = subtitles[0];
-        // Enable text track and select the appropriate one
-        player.setTextTrackVisibility(true);
-        const tracks = player.getTextTracks();
-        const matchingTrack = tracks.find(
-          (track) => track.language === newSubtitle.language || track.label === newSubtitle.label
-        );
-        if (matchingTrack) {
-          player.selectTextTrack(matchingTrack);
-        }
-        return newSubtitle;
-      } else {
-        // Disable all text tracks
-        player.setTextTrackVisibility(false);
-        return null;
-      }
-    });
-  }, [subtitles]);
-
-  const togglePictureInPicture = async () => {
-    const video = videoRef.current;
-    if (!video || !document.pictureInPictureEnabled) return;
-
-    try {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-      } else {
-        await video.requestPictureInPicture();
-      }
-    } catch (err) {
-      console.error("PiP error:", err);
-    }
-  };
-
-  const handleNextEpisode = () => {
-    if (!seasons || !onEpisodeChange || !onSeasonChange) return;
-
-    const currentSeasonEpisodes = seasons[selectedSeason]?.episodes || [];
-    
-    if (selectedEpisode < currentSeasonEpisodes.length - 1) {
-      // Move to next episode in same season
-      onEpisodeChange(selectedEpisode + 1);
-    } else if (selectedSeason < seasons.length - 1) {
-      // Move to first episode of next season
-      onSeasonChange(selectedSeason + 1);
-      onEpisodeChange(0);
-    }
-  };
-
-  const handlePreviousEpisode = () => {
-    if (!seasons || !onEpisodeChange || !onSeasonChange) return;
-
-    if (selectedEpisode > 0) {
-      // Move to previous episode in same season
-      onEpisodeChange(selectedEpisode - 1);
-    } else if (selectedSeason > 0) {
-      // Move to last episode of previous season
-      const prevSeasonEpisodes = seasons[selectedSeason - 1]?.episodes || [];
-      onSeasonChange(selectedSeason - 1);
-      onEpisodeChange(Math.max(0, prevSeasonEpisodes.length - 1));
-    }
-  };
+  }, [showKeyboardHelp, toggleSubtitles, togglePlay, seek, toggleFullscreen, toggleMute]);
 
   // Loading state
   if (loading) {
