@@ -7,6 +7,12 @@ import {
   saveStoredProgress,
   isCompletedPosition,
 } from "@/lib/progressUtils";
+import TopBar from "@/components/player/TopBar";
+import PlayerControls from "@/components/player/PlayerControls";
+import QualitySelector from "@/components/player/QualitySelector";
+import SpeedSelector from "@/components/player/SpeedSelector";
+import SettingsMenu from "@/components/player/SettingsMenu";
+import EpisodeSelector from "@/components/player/EpisodeSelector";
 
 // Provider configuration
 const PROVIDER_PRIORITY = ["lush", "flow", "sonata", "zen", "breeze", "nova"];
@@ -49,6 +55,11 @@ export default function PStreamPlayer({
   title = "",
   onBack,
   onProgressSave,
+  seasons = null, // Add seasons prop for episode navigation
+  selectedSeason = 0,
+  selectedEpisode = 0,
+  onSeasonChange = null,
+  onEpisodeChange = null,
 }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -72,6 +83,11 @@ export default function PStreamPlayer({
   const [showControls, setShowControls] = useState(true);
   const [showCenterPlay, setShowCenterPlay] = useState(true);
   const [buffering, setBuffering] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [qualities, setQualities] = useState([]);
+  const [currentQuality, setCurrentQuality] = useState("auto");
+  const [subtitles, setSubtitles] = useState([]);
+  const [currentSubtitle, setCurrentSubtitle] = useState(null);
 
   // Format time as MM:SS or HH:MM:SS
   const formatTime = (seconds) => {
@@ -380,6 +396,11 @@ export default function PStreamPlayer({
           e.preventDefault();
           toggleMute();
           break;
+        case "c":
+        case "C":
+          e.preventDefault();
+          toggleSubtitles();
+          break;
       }
     };
 
@@ -442,6 +463,94 @@ export default function PStreamPlayer({
   const switchServer = () => {
     const nextIndex = (activeServer + 1) % servers.length;
     setActiveServer(nextIndex);
+  };
+
+  // New control functions
+  const handleSpeedChange = (speed) => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.playbackRate = speed;
+    setPlaybackSpeed(speed);
+  };
+
+  const handleQualityChange = (quality) => {
+    setCurrentQuality(quality);
+    // Quality change would require re-loading the stream with the appropriate quality
+    // For now, we just update the state
+  };
+
+  const handleSubtitleChange = (subtitle) => {
+    setCurrentSubtitle(subtitle);
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Disable all text tracks
+    for (let i = 0; i < video.textTracks.length; i++) {
+      video.textTracks[i].mode = "hidden";
+    }
+
+    // Enable selected subtitle if any
+    if (subtitle) {
+      for (let i = 0; i < video.textTracks.length; i++) {
+        if (video.textTracks[i].language === subtitle.language || 
+            video.textTracks[i].label === subtitle.label) {
+          video.textTracks[i].mode = "showing";
+          break;
+        }
+      }
+    }
+  };
+
+  const toggleSubtitles = () => {
+    if (currentSubtitle === null && subtitles.length > 0) {
+      handleSubtitleChange(subtitles[0]);
+    } else {
+      handleSubtitleChange(null);
+    }
+  };
+
+  const togglePictureInPicture = async () => {
+    const video = videoRef.current;
+    if (!video || !document.pictureInPictureEnabled) return;
+
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        await video.requestPictureInPicture();
+      }
+    } catch (err) {
+      console.error("PiP error:", err);
+    }
+  };
+
+  const handleNextEpisode = () => {
+    if (!seasons || !onEpisodeChange || !onSeasonChange) return;
+
+    const currentSeasonEpisodes = seasons[selectedSeason]?.episodes || [];
+    
+    if (selectedEpisode < currentSeasonEpisodes.length - 1) {
+      // Move to next episode in same season
+      onEpisodeChange(selectedEpisode + 1);
+    } else if (selectedSeason < seasons.length - 1) {
+      // Move to first episode of next season
+      onSeasonChange(selectedSeason + 1);
+      onEpisodeChange(0);
+    }
+  };
+
+  const handlePreviousEpisode = () => {
+    if (!seasons || !onEpisodeChange || !onSeasonChange) return;
+
+    if (selectedEpisode > 0) {
+      // Move to previous episode in same season
+      onEpisodeChange(selectedEpisode - 1);
+    } else if (selectedSeason > 0) {
+      // Move to last episode of previous season
+      const prevSeasonEpisodes = seasons[selectedSeason - 1]?.episodes || [];
+      onSeasonChange(selectedSeason - 1);
+      onEpisodeChange(Math.max(0, prevSeasonEpisodes.length - 1));
+    }
   };
 
   // Loading state
@@ -522,132 +631,78 @@ export default function PStreamPlayer({
       )}
 
       {/* Top control bar */}
-      <div
-        className={`absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent p-4 transition-opacity duration-300 ${
-          showControls ? "opacity-100" : "opacity-0"
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="text-white hover:text-gray-300 transition"
-            title="Back"
-          >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <h1 className="text-white text-lg font-medium truncate flex-1">{title}</h1>
-        </div>
-      </div>
+      <TopBar
+        title={title}
+        onBack={onBack}
+        showControls={showControls}
+        onInfo={null} // Can be implemented later
+        onBookmark={null} // Can be implemented later
+      />
 
       {/* Bottom control bar */}
-      <div
-        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${
-          showControls ? "opacity-100" : "opacity-0"
-        }`}
-        onClick={(e) => e.stopPropagation()}
+      <PlayerControls
+        isPlaying={isPlaying}
+        currentTime={currentTime}
+        duration={duration}
+        volume={volume}
+        isMuted={isMuted}
+        isFullscreen={isFullscreen}
+        showControls={showControls}
+        onPlayPause={togglePlay}
+        onProgressClick={handleProgressClick}
+        onVolumeChange={handleVolumeChange}
+        onToggleMute={toggleMute}
+        onToggleFullscreen={toggleFullscreen}
+        onTogglePictureInPicture={togglePictureInPicture}
+        formatTime={formatTime}
       >
-        {/* Progress bar */}
-        <div
-          className="w-full h-1 bg-white/30 rounded-full cursor-pointer mb-4 hover:h-2 transition-all"
-          onClick={handleProgressClick}
-        >
-          <div
-            className="h-full bg-red-600 rounded-full relative"
-            style={{ width: `${(currentTime / duration) * 100}%` }}
-          >
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full"></div>
-          </div>
-        </div>
-
-        {/* Controls */}
-        <div className="flex items-center gap-4">
-          {/* Play/Pause */}
+        {/* Additional controls */}
+        {servers.length > 1 && (
           <button
-            onClick={togglePlay}
-            className="text-white hover:text-gray-300 transition"
-            title={isPlaying ? "Pause" : "Play"}
+            onClick={switchServer}
+            className="text-white text-sm hover:text-gray-300 transition-colors duration-200 px-3 py-1.5 bg-white/10 rounded"
+            title="Switch server"
           >
-            {isPlaying ? (
-              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-              </svg>
-            ) : (
-              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
+            Server {activeServer + 1}/{servers.length}
           </button>
+        )}
 
-          {/* Time display */}
-          <span className="text-white text-sm font-medium">
-            {formatTime(currentTime)} / {formatTime(duration)}
-          </span>
+        {/* Episode selector for series */}
+        {seasons && seasons.length > 0 && (
+          <EpisodeSelector
+            seasons={seasons}
+            selectedSeason={selectedSeason}
+            selectedEpisode={selectedEpisode}
+            onSeasonChange={onSeasonChange}
+            onEpisodeChange={onEpisodeChange}
+            onNext={handleNextEpisode}
+            onPrevious={handlePreviousEpisode}
+            showControls={showControls}
+          />
+        )}
 
-          <div className="flex-1"></div>
+        <SpeedSelector
+          currentSpeed={playbackSpeed}
+          onSpeedChange={handleSpeedChange}
+          showControls={showControls}
+        />
 
-          {/* Server switch (if multiple) */}
-          {servers.length > 1 && (
-            <button
-              onClick={switchServer}
-              className="text-white text-sm hover:text-gray-300 transition px-3 py-1 bg-white/10 rounded"
-              title="Switch server"
-            >
-              Server {activeServer + 1}/{servers.length}
-            </button>
-          )}
+        {qualities.length > 0 && (
+          <QualitySelector
+            qualities={qualities}
+            currentQuality={currentQuality}
+            onQualityChange={handleQualityChange}
+            showControls={showControls}
+          />
+        )}
 
-          {/* Volume control */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleMute}
-              className="text-white hover:text-gray-300 transition"
-              title={isMuted ? "Unmute" : "Mute"}
-            >
-              {isMuted || volume === 0 ? (
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                </svg>
-              )}
-            </button>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={volume}
-              onChange={handleVolumeChange}
-              className="w-20 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
-              style={{
-                background: `linear-gradient(to right, white ${volume * 100}%, rgba(255,255,255,0.3) ${volume * 100}%)`,
-              }}
-            />
-          </div>
-
-          {/* Fullscreen */}
-          <button
-            onClick={toggleFullscreen}
-            className="text-white hover:text-gray-300 transition"
-            title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-          >
-            {isFullscreen ? (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-              </svg>
-            )}
-          </button>
-        </div>
-      </div>
+        <SettingsMenu
+          subtitles={subtitles}
+          currentSubtitle={currentSubtitle}
+          onSubtitleChange={handleSubtitleChange}
+          showControls={showControls}
+        />
+      </PlayerControls>
     </div>
   );
 }
