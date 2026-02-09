@@ -14,7 +14,6 @@ export default function EpisodeSelector({
   onEpisodeChange,
   onNext,
   onPrevious,
-  showControls,
 }) {
   const [showSeasonMenu, setShowSeasonMenu] = useState(false);
   const [showEpisodeMenu, setShowEpisodeMenu] = useState(false);

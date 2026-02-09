@@ -710,14 +710,12 @@ export default function PStreamPlayer({
             onEpisodeChange={onEpisodeChange}
             onNext={handleNextEpisode}
             onPrevious={handlePreviousEpisode}
-            showControls={showControls}
           />
         )}
 
         <SpeedSelector
           currentSpeed={playbackSpeed}
           onSpeedChange={handleSpeedChange}
-          showControls={showControls}
         />
 
         {qualities.length > 0 && (
@@ -725,7 +723,6 @@ export default function PStreamPlayer({
             qualities={qualities}
             currentQuality={currentQuality}
             onQualityChange={handleQualityChange}
-            showControls={showControls}
           />
         )}
 
@@ -733,7 +730,6 @@ export default function PStreamPlayer({
           subtitles={subtitles}
           currentSubtitle={currentSubtitle}
           onSubtitleChange={handleSubtitleChange}
-          showControls={showControls}
         />
       </PlayerControls>
     </div>

@@ -5,7 +5,7 @@ import { useState, useRef } from "react";
 /**
  * QualitySelector - Quality selection dropdown for video playback
  */
-export default function QualitySelector({ qualities, currentQuality, onQualityChange, showControls }) {
+export default function QualitySelector({ qualities, currentQuality, onQualityChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 

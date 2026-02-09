@@ -6,7 +6,7 @@ import { useState, useRef } from "react";
  * SpeedSelector - Playback speed selector for video playback
  * Supports 0.5x, 0.75x, 1x, 1.25x, 1.5x, 2x speeds
  */
-export default function SpeedSelector({ currentSpeed, onSpeedChange, showControls }) {
+export default function SpeedSelector({ currentSpeed, onSpeedChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 

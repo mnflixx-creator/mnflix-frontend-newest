@@ -9,7 +9,6 @@ export default function SettingsMenu({
   subtitles,
   currentSubtitle,
   onSubtitleChange,
-  showControls,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
