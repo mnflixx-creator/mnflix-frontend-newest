@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
+import styles from "./styles/player.module.css";
 
 /**
  * SpeedSelector - Playback speed selector for video playback
@@ -8,7 +9,6 @@ import { useState, useRef } from "react";
  */
 export default function SpeedSelector({ currentSpeed, onSpeedChange }) {
   const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef(null);
 
   const speeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
@@ -18,13 +18,13 @@ export default function SpeedSelector({ currentSpeed, onSpeedChange }) {
   };
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className={styles.dropdownContainer}>
       <button
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className="text-white hover:text-gray-300 transition-colors duration-200 px-3 py-1.5 rounded hover:bg-white/10 text-sm font-medium"
+        className={styles.dropdownButton}
         title="Playback speed"
       >
         {currentSpeed}x
@@ -33,21 +33,17 @@ export default function SpeedSelector({ currentSpeed, onSpeedChange }) {
       {/* Dropdown menu */}
       {isOpen && (
         <div
-          className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-md rounded-lg shadow-xl py-2 min-w-[120px] border border-white/10"
+          className={styles.dropdownMenu}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="px-3 py-1 text-gray-400 text-xs font-semibold uppercase">
+          <div className={styles.dropdownHeader}>
             Speed
           </div>
           {speeds.map((speed) => (
             <button
               key={speed}
               onClick={() => handleSpeedClick(speed)}
-              className={`w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${
-                speed === currentSpeed
-                  ? "text-white bg-white/20 font-medium"
-                  : "text-gray-300 hover:bg-white/10 hover:text-white"
-              }`}
+              className={`${styles.dropdownItem} ${speed === currentSpeed ? styles.active : ""}`}
             >
               {speed === 1 ? "Normal" : `${speed}x`}
             </button>

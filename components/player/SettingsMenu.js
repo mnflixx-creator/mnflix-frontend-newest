@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
+import styles from "./styles/player.module.css";
 
 /**
  * SettingsMenu - Settings menu for captions/subtitles
@@ -11,7 +12,6 @@ export default function SettingsMenu({
   onSubtitleChange,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef(null);
 
   const handleSubtitleClick = (subtitle) => {
     onSubtitleChange(subtitle);
@@ -19,13 +19,13 @@ export default function SettingsMenu({
   };
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className={styles.dropdownContainer}>
       <button
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className="text-white hover:text-gray-300 transition-colors duration-200 p-2 rounded hover:bg-white/10"
+        className={styles.button}
         title="Captions"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,21 +41,17 @@ export default function SettingsMenu({
       {/* Dropdown menu */}
       {isOpen && (
         <div
-          className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-md rounded-lg shadow-xl py-2 min-w-[180px] max-h-[300px] overflow-y-auto border border-white/10"
+          className={styles.dropdownMenu}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="px-3 py-1 text-gray-400 text-xs font-semibold uppercase">
+          <div className={styles.dropdownHeader}>
             Subtitles
           </div>
           
           {/* Off option */}
           <button
             onClick={() => handleSubtitleClick(null)}
-            className={`w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${
-              currentSubtitle === null
-                ? "text-white bg-white/20 font-medium"
-                : "text-gray-300 hover:bg-white/10 hover:text-white"
-            }`}
+            className={`${styles.dropdownItem} ${currentSubtitle === null ? styles.active : ""}`}
           >
             Off
           </button>
@@ -65,18 +61,14 @@ export default function SettingsMenu({
             <button
               key={index}
               onClick={() => handleSubtitleClick(subtitle)}
-              className={`w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${
-                currentSubtitle?.url === subtitle.url
-                  ? "text-white bg-white/20 font-medium"
-                  : "text-gray-300 hover:bg-white/10 hover:text-white"
-              }`}
+              className={`${styles.dropdownItem} ${currentSubtitle?.url === subtitle.url ? styles.active : ""}`}
             >
               {subtitle.label || subtitle.language || `Track ${index + 1}`}
             </button>
           ))}
 
           {(!subtitles || subtitles.length === 0) && (
-            <div className="px-4 py-2 text-sm text-gray-500">
+            <div className={styles.dropdownItemDisabled}>
               No subtitles available
             </div>
           )}
