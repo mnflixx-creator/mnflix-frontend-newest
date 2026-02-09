@@ -1,5 +1,8 @@
 "use client";
 
+import ProgressBar from "./ProgressBar";
+import styles from "./styles/player.module.css";
+
 /**
  * PlayerControls - Bottom control bar for P-Stream player
  * Includes play/pause, progress bar, volume, time display, and additional controls
@@ -21,62 +24,69 @@ export default function PlayerControls({
   formatTime,
   children, // For additional controls like quality, speed, etc.
 }) {
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const handleSeek = (time) => {
+    // Create a synthetic event that mimics a progress bar click
+    const percent = time / duration;
+    const syntheticEvent = {
+      currentTarget: {
+        getBoundingClientRect: () => ({
+          left: 0,
+          width: 1000,
+        }),
+      },
+      clientX: percent * 1000,
+    };
+    onProgressClick(syntheticEvent);
+  };
 
   return (
     <div
-      className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent backdrop-blur-sm p-4 transition-opacity duration-300 z-10 ${
-        showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-      }`}
+      className={`${styles.bottomControls} ${!showControls ? styles.hidden : ""}`}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Progress bar */}
-      <div
-        className="w-full h-1 bg-white/30 rounded-full cursor-pointer mb-4 hover:h-2 transition-all duration-150 group relative"
-        onClick={onProgressClick}
-      >
-        <div
-          className="h-full bg-red-600 rounded-full relative transition-all duration-150"
-          style={{ width: `${progress}%` }}
-        >
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-150"></div>
-        </div>
-      </div>
+      <ProgressBar
+        currentTime={currentTime}
+        duration={duration}
+        bufferedTime={0} // Can be enhanced to show actual buffered time
+        onSeek={handleSeek}
+        formatTime={formatTime}
+      />
 
       {/* Controls */}
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className={styles.controlsRow}>
         {/* Play/Pause button */}
         <button
           onClick={onPlayPause}
-          className="text-white hover:text-gray-300 transition-colors duration-200 flex-shrink-0 p-1 md:p-0"
+          className={styles.playButton}
           title={isPlaying ? "Pause" : "Play"}
         >
           {isPlaying ? (
-            <svg className="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
             </svg>
           ) : (
-            <svg className="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
           )}
         </button>
 
         {/* Time display */}
-        <span className="text-white text-xs md:text-sm font-medium select-none flex-shrink-0">
+        <span className={styles.timeDisplay}>
           {formatTime(currentTime)} / {formatTime(duration)}
         </span>
 
-        <div className="flex-1"></div>
+        <div className={styles.spacer}></div>
 
         {/* Additional controls (quality, speed, episode selector, etc.) */}
         {children}
 
         {/* Volume control */}
-        <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+        <div className={styles.volumeControl}>
           <button
             onClick={onToggleMute}
-            className="text-white hover:text-gray-300 transition-colors duration-200"
+            className={styles.button}
             title={isMuted ? "Unmute" : "Mute"}
           >
             {isMuted || volume === 0 ? (
@@ -96,10 +106,7 @@ export default function PlayerControls({
             step="0.01"
             value={volume}
             onChange={onVolumeChange}
-            className="w-20 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
-            style={{
-              background: `linear-gradient(to right, white ${volume * 100}%, rgba(255,255,255,0.3) ${volume * 100}%)`,
-            }}
+            className={styles.volumeSlider}
           />
         </div>
 
@@ -107,7 +114,7 @@ export default function PlayerControls({
         {onTogglePictureInPicture && (
           <button
             onClick={onTogglePictureInPicture}
-            className="text-white hover:text-gray-300 transition-colors duration-200 flex-shrink-0"
+            className={styles.button}
             title="Picture in Picture"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +132,7 @@ export default function PlayerControls({
         {/* Fullscreen button */}
         <button
           onClick={onToggleFullscreen}
-          className="text-white hover:text-gray-300 transition-colors duration-200 flex-shrink-0"
+          className={styles.button}
           title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
         >
           {isFullscreen ? (

@@ -13,6 +13,8 @@ import QualitySelector from "@/components/player/QualitySelector";
 import SpeedSelector from "@/components/player/SpeedSelector";
 import SettingsMenu from "@/components/player/SettingsMenu";
 import EpisodeSelector from "@/components/player/EpisodeSelector";
+import KeyboardHelp from "@/components/player/KeyboardHelp";
+import styles from "@/components/player/styles/player.module.css";
 
 // Provider configuration
 const PROVIDER_PRIORITY = ["lush", "flow", "sonata", "zen", "breeze", "nova"];
@@ -88,6 +90,7 @@ export default function PStreamPlayer({
   const [currentQuality, setCurrentQuality] = useState("auto");
   const [subtitles, setSubtitles] = useState([]);
   const [currentSubtitle, setCurrentSubtitle] = useState(null);
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
 
   // Format time as MM:SS or HH:MM:SS
   const formatTime = (seconds) => {
@@ -402,7 +405,22 @@ export default function PStreamPlayer({
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (!videoRef.current) return;
+      const video = videoRef.current;
+      if (!video) return;
+
+      // Show keyboard help
+      if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+        e.preventDefault();
+        setShowKeyboardHelp(true);
+        return;
+      }
+
+      // Close keyboard help on Escape
+      if (e.key === "Escape" && showKeyboardHelp) {
+        e.preventDefault();
+        setShowKeyboardHelp(false);
+        return;
+      }
 
       switch (e.key) {
         case " ":
@@ -416,6 +434,14 @@ export default function PStreamPlayer({
         case "ArrowRight":
           e.preventDefault();
           seek(10);
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          video.volume = Math.min(1, video.volume + 0.1);
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          video.volume = Math.max(0, video.volume - 0.1);
           break;
         case "f":
         case "F":
@@ -437,7 +463,7 @@ export default function PStreamPlayer({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [showKeyboardHelp]);
 
   // Player controls
   const togglePlay = () => {
@@ -618,7 +644,7 @@ export default function PStreamPlayer({
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 bg-black z-50"
+      className={styles.playerContainer}
       onMouseMove={resetControlsTimeout}
       onTouchStart={resetControlsTimeout}
       onClick={() => {
@@ -632,7 +658,7 @@ export default function PStreamPlayer({
       {/* Video element */}
       <video
         ref={videoRef}
-        className="w-full h-full object-contain"
+        className={styles.videoElement}
         onClick={(e) => {
           e.stopPropagation();
           togglePlay();
@@ -641,15 +667,15 @@ export default function PStreamPlayer({
 
       {/* Center play button (before playing) */}
       {showCenterPlay && !isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className={styles.centerOverlay}>
           <button
             onClick={(e) => {
               e.stopPropagation();
               togglePlay();
             }}
-            className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition pointer-events-auto"
+            className={styles.centerPlayButton}
           >
-            <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+            <svg className={styles.centerPlayIcon} fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
           </button>
@@ -658,10 +684,16 @@ export default function PStreamPlayer({
 
       {/* Loading spinner */}
       {buffering && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        <div className={styles.centerOverlay}>
+          <div className={styles.loadingSpinner}></div>
         </div>
       )}
+
+      {/* Keyboard help overlay */}
+      <KeyboardHelp
+        isVisible={showKeyboardHelp}
+        onClose={() => setShowKeyboardHelp(false)}
+      />
 
       {/* Top control bar */}
       <TopBar
@@ -693,7 +725,7 @@ export default function PStreamPlayer({
         {servers.length > 1 && (
           <button
             onClick={switchServer}
-            className="text-white text-sm hover:text-gray-300 transition-colors duration-200 px-3 py-1.5 bg-white/10 rounded"
+            className={styles.buttonWithText}
             title="Switch server"
           >
             Server {activeServer + 1}/{servers.length}
