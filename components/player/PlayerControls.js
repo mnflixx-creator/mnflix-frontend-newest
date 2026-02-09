@@ -44,26 +44,26 @@ export default function PlayerControls({
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         {/* Play/Pause button */}
         <button
           onClick={onPlayPause}
-          className="text-white hover:text-gray-300 transition-colors duration-200 flex-shrink-0"
+          className="text-white hover:text-gray-300 transition-colors duration-200 flex-shrink-0 p-1 md:p-0"
           title={isPlaying ? "Pause" : "Play"}
         >
           {isPlaying ? (
-            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
               <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
             </svg>
           ) : (
-            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
           )}
         </button>
 
         {/* Time display */}
-        <span className="text-white text-sm font-medium select-none flex-shrink-0">
+        <span className="text-white text-xs md:text-sm font-medium select-none flex-shrink-0">
           {formatTime(currentTime)} / {formatTime(duration)}
         </span>
 
@@ -73,7 +73,7 @@ export default function PlayerControls({
         {children}
 
         {/* Volume control */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="hidden md:flex items-center gap-2 flex-shrink-0">
           <button
             onClick={onToggleMute}
             className="text-white hover:text-gray-300 transition-colors duration-200"

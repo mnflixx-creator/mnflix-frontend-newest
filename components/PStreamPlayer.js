@@ -202,6 +202,19 @@ export default function PStreamPlayer({
         }
 
         setServers(normalizedStreams);
+
+        // Extract subtitles/captions if available
+        const rawSubtitles = data.subtitles || data.captions || data.result?.subtitles || data.result?.captions || [];
+        const normalizedSubtitles = (Array.isArray(rawSubtitles) ? rawSubtitles : [])
+          .map((sub, i) => ({
+            url: sub.url || sub.file || sub.src || "",
+            label: sub.label || sub.name || sub.language || `Subtitle ${i + 1}`,
+            language: sub.language || sub.lang || "en",
+            kind: sub.kind || "subtitles",
+          }))
+          .filter((s) => s.url);
+        
+        setSubtitles(normalizedSubtitles);
         setLoading(false);
       } catch (err) {
         if (!cancelled) {
@@ -262,14 +275,34 @@ export default function PStreamPlayer({
         // Load the stream
         await player.load(streamUrl);
 
-        // Restore progress
-        const progressKey = movieId ? `progress_${movieId}` : null;
-        if (progressKey) {
-          const stored = getStoredProgress(progressKey);
-          if (stored && stored.position > 0 && 
+        // Load subtitles if available
+        if (subtitles && subtitles.length > 0) {
+          for (const subtitle of subtitles) {
+            try {
+              await player.addTextTrackAsync(
+                subtitle.url,
+                subtitle.language || "en",
+                subtitle.kind || "subtitles",
+                "text/vtt", // Default to VTT format
+                subtitle.label || subtitle.language
+              );
+            } catch (err) {
+              console.warn("Failed to load subtitle:", err);
+            }
+          }
+        }
+
+        // Restore progress using proper progressUtils
+        if (movieId) {
+          const isSeries = ["series", "tv", "anime", "kdrama", "cdrama"].includes(movieType);
+          const s = isSeries ? season : 0;
+          const e = isSeries ? episode : 0;
+          
+          const storedPosition = getStoredProgress(movieId, s, e);
+          if (storedPosition && storedPosition > 0 && 
               isFinite(video.duration) && 
-              !isCompletedPosition(stored.position, video.duration)) {
-            video.currentTime = stored.position;
+              !isCompletedPosition(storedPosition, video.duration)) {
+            video.currentTime = storedPosition;
           }
         }
 
@@ -289,7 +322,7 @@ export default function PStreamPlayer({
       }
       shakaPlayerRef.current = null;
     };
-  }, [servers, activeServer, movieId]);
+  }, [servers, activeServer, movieId, movieType, season, episode, subtitles]);
 
   // Video event handlers
   useEffect(() => {
@@ -330,18 +363,16 @@ export default function PStreamPlayer({
   useEffect(() => {
     if (!movieId || !videoRef.current) return;
 
-    const progressKey = `progress_${movieId}`;
+    const isSeries = ["series", "tv", "anime", "kdrama", "cdrama"].includes(movieType);
+    const s = isSeries ? season : 0;
+    const e = isSeries ? episode : 0;
 
     const saveProgress = () => {
       const video = videoRef.current;
       if (!video || !isFinite(video.currentTime) || !isFinite(video.duration)) return;
       
       if (video.currentTime > 5) {
-        saveStoredProgress(progressKey, {
-          position: video.currentTime,
-          duration: video.duration,
-          timestamp: Date.now(),
-        });
+        saveStoredProgress(movieId, s, e, video.currentTime, video.duration);
         onProgressSave?.(video.currentTime, video.duration);
       }
     };
@@ -354,7 +385,7 @@ export default function PStreamPlayer({
         saveProgress(); // Final save
       }
     };
-  }, [movieId, onProgressSave]);
+  }, [movieId, movieType, season, episode, onProgressSave]);
 
   // Fullscreen change handler
   useEffect(() => {
@@ -481,22 +512,24 @@ export default function PStreamPlayer({
 
   const handleSubtitleChange = (subtitle) => {
     setCurrentSubtitle(subtitle);
-    const video = videoRef.current;
-    if (!video) return;
+    
+    const player = shakaPlayerRef.current;
+    if (!player) return;
 
-    // Disable all text tracks
-    for (let i = 0; i < video.textTracks.length; i++) {
-      video.textTracks[i].mode = "hidden";
-    }
-
-    // Enable selected subtitle if any
-    if (subtitle) {
-      for (let i = 0; i < video.textTracks.length; i++) {
-        if (video.textTracks[i].language === subtitle.language || 
-            video.textTracks[i].label === subtitle.label) {
-          video.textTracks[i].mode = "showing";
-          break;
-        }
+    if (subtitle === null) {
+      // Disable all text tracks
+      player.setTextTrackVisibility(false);
+    } else {
+      // Enable text track and select the appropriate one
+      player.setTextTrackVisibility(true);
+      
+      const tracks = player.getTextTracks();
+      const matchingTrack = tracks.find(
+        (track) => track.language === subtitle.language || track.label === subtitle.label
+      );
+      
+      if (matchingTrack) {
+        player.selectTextTrack(matchingTrack);
       }
     }
   };
