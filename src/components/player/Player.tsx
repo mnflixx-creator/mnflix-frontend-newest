@@ -18,7 +18,8 @@ import { usePlayerStore } from '../../stores/player/store'
 import { useVideoEvents } from './hooks/useVideoEvents'
 import { useKeyboard } from './hooks/useKeyboard'
 import { useFullscreen } from './hooks/useFullscreen'
-import { getZenflifyMovieStreams } from '../../services/zenflify'
+import { useProgressTracking } from './hooks/useProgressTracking'
+import { getZenflifyMovieStreams, getWatchProgress } from '../../services/zenflify'
 import type { StreamSource } from '../../types/player'
 
 interface PlayerComponentProps {
@@ -83,9 +84,10 @@ export function PlayerComponent({
   // Hooks
   useVideoEvents(videoRef)
   useKeyboard()
+  useProgressTracking(movieId)
   const { toggleFullscreen: handleFullscreenToggle } = useFullscreen(containerRef)
 
-  // Load streaming sources
+  // Load streaming sources and restore progress
   useEffect(() => {
     async function loadStreams() {
       try {
@@ -110,6 +112,13 @@ export function PlayerComponent({
         // Set subtitles if available
         if (data.subtitles && data.subtitles.length > 0) {
           setSubtitles(data.subtitles)
+        }
+        
+        // Restore watch progress if available
+        const progress = await getWatchProgress(movieId)
+        if (progress && progress.currentTime > 5) {
+          // Only restore if watched more than 5 seconds
+          seek(progress.currentTime)
         }
         
         setLoading(false)
