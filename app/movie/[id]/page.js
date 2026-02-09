@@ -42,6 +42,11 @@ export default function MoviePlayerPage(props) {
   const [selectedEpisode, setSelectedEpisode] = useState(0);
   const [resumeData, setResumeData] = useState(null);
 
+  const CDN = process.env.NEXT_PUBLIC_CDN_URL;
+
+  const [uploadedSrc, setUploadedSrc] = useState(null); // final playable master.m3u8 URL (with token)
+  const [uploadedErr, setUploadedErr] = useState("");
+
   // 🔍 Just for small debug text under player
   const [autoMnStatus, setAutoMnStatus] = useState(""); // "idle" | "working" | "done" | "error"
 
@@ -90,6 +95,15 @@ export default function MoviePlayerPage(props) {
         (sub.name && /монгол|mongolian/i.test(sub.name))
     );
   }, [movie]);
+
+  const getDeviceId = () => {
+    let deviceId = localStorage.getItem("deviceId");
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem("deviceId", deviceId);
+    }
+    return deviceId;
+  };
 
   // 🔁 Load "skip Mongolian" user preference from localStorage
   useEffect(() => {
@@ -602,6 +616,60 @@ useEffect(() => {
     }
   })();
 }, [id, router, API]);
+
+useEffect(() => {
+  if (!movie) return;
+  console.log("[UPLOAD] keys:", Object.keys(movie || {}));
+  console.log("[UPLOAD] hlsPath:", movie?.hlsPath);
+  if (!API || !CDN) return;
+
+  // ✅ field you store in DB for uploaded HLS
+  const p = movie?.hlsPath; // example: "/hls/550/master.m3u8"
+
+  if (!p) {
+    setUploadedSrc(null);
+    setUploadedErr("");
+    return;
+  }
+
+  let deviceId = localStorage.getItem("deviceId");
+  if (!deviceId) {
+    deviceId = crypto.randomUUID();
+    localStorage.setItem("deviceId", deviceId);
+  }
+  let cancelled = false;
+
+  (async () => {
+    try {
+      setUploadedErr("");
+
+      const res = await fetch(`${API}/api/play-token?p=${encodeURIComponent(p)}`, {
+        credentials: "omit",
+        headers: { "x-device-id": deviceId },
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (cancelled) return;
+
+      if (!res.ok) {
+        setUploadedSrc(null);
+        setUploadedErr(data?.message || "play-token error");
+        return;
+      }
+
+      setUploadedSrc(`${CDN}${p}?token=${encodeURIComponent(data.token)}`);
+    } catch (e) {
+      if (cancelled) return;
+      setUploadedSrc(null);
+      setUploadedErr("play-token request failed");
+    }
+  })();
+
+  return () => {
+    cancelled = true;
+  };
+}, [movie, API, CDN]);
 
 /* -----------------------------
  ⭐ LOAD RECOMMENDED (separate, does NOT block page)
@@ -1191,6 +1259,11 @@ useEffect(() => {
 
       {/* PLAYER SECTION */}
       <div id="moviePlayer" className="relative px-4 sm:px-6 md:px-12 mt-8 md:mt-12 pb-16">
+        {uploadedErr && (
+          <div className="mb-3 text-xs text-red-400">
+            Uploaded player error: {uploadedErr}
+          </div>
+        )}
         {checkingAccess && (
           <p className="text-gray-300 mb-3 text-sm sm:text-base">
             {lang === "mn" ? "Шалгаж байна..." : "Checking access..."}
@@ -1529,7 +1602,21 @@ useEffect(() => {
               )}
 
               <div className={loadingMovie ? "pointer-events-none select-none" : ""}>
-                {isZentlifyTitle ? (
+                {uploadedSrc ? (
+                  <CineproPlayer
+                    key={`upl-${movie._id}-k${playerKey}`}
+                    src={uploadedSrc}
+                    movieId={movie?._id || id}
+                    type={movie?.type || "movie"}
+                    movieType={movie?.type || "movie"}
+                    season={resolvedSeasonNumber}
+                    episode={resolvedEpisodeNumber}
+                    subtitles={visibleSubtitles}
+                    onProgressSave={handleProgressSave}
+                    title={movie?.originalTitle || movie?.title || ""}
+                    animeTitle={animeTitle}
+                  />
+                ) : isZentlifyTitle ? (
                   // 🟦 All TMDB titles (movie + series) use Zentlify (Zen/Sonata/Breeze/Nova/Lush/Flow)
                   <CineproPlayer
                     key={`${movie._id || movie.tmdbId}-${isSeries ? "tv" : "movie"}-s${
