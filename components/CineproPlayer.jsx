@@ -2066,6 +2066,7 @@ export default function CineproPlayer({
                     <button
                       type="button"
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         setShowServerMenu((v) => !v);
                       }}
