@@ -1608,13 +1608,13 @@ export default function CineproPlayer({
     if (!fsElement) {
       // Prefer container fullscreen, then fallback to video-level fullscreen.
       const entered =
-        tryInvoke(container, [
+        tryInvoke(video, [
           "requestFullscreen",
           "webkitRequestFullscreen",
           "mozRequestFullScreen",
           "msRequestFullscreen",
         ]) ||
-        tryInvoke(video, [
+        tryInvoke(container, [
           "requestFullscreen",
           "webkitRequestFullscreen",
           "mozRequestFullScreen",
@@ -2172,10 +2172,14 @@ export default function CineproPlayer({
 
                 <button
                   type="button"
-                  onClick={toggleFullscreen}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleFullscreen();
+                  }}
                   className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-base"
                 >
-                  {isFullscreen ? "⤢" : "⤢"}
+                  ⤢
                 </button>
               </div>
             </div>
