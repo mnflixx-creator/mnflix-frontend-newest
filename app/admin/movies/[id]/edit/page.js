@@ -54,6 +54,7 @@ export default function EditMoviePage() {
           isTrending: data.isTrending ?? false,
           thumbnail: data.thumbnail ?? "",
           banner: data.banner ?? "",
+          hlsPath: data.hlsPath ?? "",
           type: data.type ?? "movie",
           subtitles: Array.isArray(data.subtitles) ? data.subtitles : [], // movie-level
         });
@@ -326,6 +327,7 @@ export default function EditMoviePage() {
     formData.append("player1", movie.player1);
     formData.append("player2", movie.player2);
     formData.append("player3", movie.player3);
+    formData.append("hlsPath", movie.hlsPath || "");
     formData.append("kidsOnly", movie.kidsOnly);
     formData.append("isTrending", movie.isTrending);
 
@@ -502,6 +504,18 @@ export default function EditMoviePage() {
         {/* PLAYER LINKS (ONLY FOR MOVIE) */}
         {movie.type === "movie" && (
           <div className="space-y-4">
+            <div>
+              <label className="block mb-1">Uploaded HLS Path (R2)</label>
+              <input
+                value={movie.hlsPath || ""}
+                onChange={(e) => setMovie({ ...movie, hlsPath: e.target.value })}
+                placeholder="/hls/695fb46188e7daef50d5e0d2/master.m3u8"
+                className="w-full p-3 bg-black/40 border border-white/10 rounded"
+              />
+              <p className="text-xs text-white/50 mt-1">
+                If set, the movie page will play from your uploaded HLS (R2) instead of providers.
+              </p>
+            </div>
             <div>
               <label className="block mb-1">Player 1 URL</label>
               <input
@@ -734,21 +748,16 @@ export default function EditMoviePage() {
                     <div className="space-y-3">
                       {(s.episodes || []).map((ep, ei) => (
                         <div key={ei} className="space-y-2">
+                          {/* Row 1: episode #, provider player, remove */}
                           <div className="grid grid-cols-1 md:grid-cols-[120px_1fr_140px] gap-2 items-center">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-300">
-                                Episode
-                              </span>
+                              <span className="text-sm text-gray-300">Episode</span>
                               <input
                                 type="number"
                                 min="1"
                                 value={ep.episodeNumber}
                                 onChange={(e) =>
-                                  updateEpisodeNumber(
-                                    si,
-                                    ei,
-                                    e.target.value
-                                  )
+                                  updateEpisodeNumber(si, ei, e.target.value)
                                 }
                                 className="w-24 p-2 bg-black/40 border border-white/10 rounded"
                               />
@@ -757,16 +766,40 @@ export default function EditMoviePage() {
                             <input
                               value={ep.player || ""}
                               onChange={(e) =>
-                                updateEpisodePlayer(
-                                  si,
-                                  ei,
-                                  e.target.value
-                                )
+                                updateEpisodePlayer(si, ei, e.target.value)
                               }
                               placeholder="https://vidsrcme.ru/embed/tv?imdb=tt...&season=1&episode=1"
                               className="w-full p-2 bg-black/40 border border-white/10 rounded"
                             />
+                          </div>
 
+                          {/* Row 2: uploaded HLS path (full width) */}
+                          <div className="md:pl-[120px] space-y-1">
+                            <label className="block text-xs uppercase opacity-70">
+                              Uploaded HLS Path (R2)
+                            </label>
+
+                            <input
+                              value={ep.hlsPath || ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setSeasons((prev) => {
+                                  const copy = [...prev];
+                                  const season = { ...copy[si] };
+                                  const episodes = [...(season.episodes || [])];
+                                  episodes[ei] = { ...(episodes[ei] || {}), hlsPath: val };
+                                  season.episodes = episodes;
+                                  copy[si] = season;
+                                  return copy;
+                                });
+                              }}
+                              placeholder={`/hls/${movie._id}/s${String(s.seasonNumber).padStart(2,"0")}/e${String(ep.episodeNumber).padStart(2,"0")}/master.m3u8`}
+                              className="w-full p-2 bg-black/40 border border-white/10 rounded"
+                            />
+
+                            <p className="text-[11px] text-white/50">
+                              If set, this episode plays from your R2 upload instead of provider URL.
+                            </p>
                             <button
                               type="button"
                               onClick={() => removeEpisode(si, ei)}

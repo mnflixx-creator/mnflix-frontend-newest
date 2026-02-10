@@ -536,6 +536,28 @@ export default function CineproPlayer({
       setIsSourceReady(false);
       setAutoPlayRequested(false);
 
+      // ✅ If admin uploaded HLS (R2), use it directly and skip Zentlify
+      if (src) {
+        setServers([
+          {
+            type: "hls",
+            file: normalizeUrl(src),
+            label: "Uploaded",
+            provider: "uploaded",
+            quality: "",
+            note: "Your uploaded file",
+            intro: null,
+            outro: null,
+            providerSubtitles: [],
+          },
+        ]);
+
+        setActiveServer(0);
+        setSbSubs([]);
+        setLoading(false);
+        return;
+      }
+
       // If we have neither tmdbId nor src → no source at all
       if (!tmdbId && !src) {
         setLoading(false);
