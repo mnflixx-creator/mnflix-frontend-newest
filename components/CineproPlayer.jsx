@@ -768,41 +768,57 @@ export default function CineproPlayer({
           return sa - sb;
         });
 
-        // 4️⃣ Choose default server (best Lush if exists)
+        // 4️⃣ Choose default server (prefer Flux ALWAYS if available)
         let defaultIndex = 0;
         let bestLushIndexLocal = null;
 
-        // 1️⃣ Prefer Lush streams that are MP4 (Atlas)
-        let lushCandidates = orderedServers
-          .map((s, idx) => ({ s, idx }))
-          .filter(({ s }) => s.provider === "lush" && s.type === "mp4");
+        const scoreQuality = (q) => {
+          if (!q) return 0;
+          const num = parseInt(String(q).match(/\d+/)?.[0] || "0", 10);
+          return num;
+        };
 
-        // If for some reason there are no MP4 Lush streams, fall back to any Lush
-        if (!lushCandidates.length) {
-          lushCandidates = orderedServers
+        const bestIndexForProvider = (provider, preferMp4 = false) => {
+          const candidates = orderedServers
             .map((s, idx) => ({ s, idx }))
-            .filter(({ s }) => s.provider === "lush");
+            .filter(({ s }) => s.provider === provider);
+
+          if (!candidates.length) return null;
+
+          let list = candidates;
+
+          // Only Lush needs MP4 preference (Atlas)
+          if (preferMp4) {
+            const mp4 = candidates.filter(({ s }) => s.type === "mp4");
+            if (mp4.length) list = mp4;
+          }
+
+          // pick highest quality
+          let best = list[0];
+          for (const c of list) {
+            if (scoreQuality(c.s.quality) > scoreQuality(best.s.quality)) best = c;
+          }
+          return best.idx;
+        };
+
+        // keep bestLushIndex for the menu label (Atlas 1080p etc.)
+        bestLushIndexLocal = bestIndexForProvider("lush", true);
+
+        // ✅ Choose default by PRIORITY list (Flux first)
+        let chosen = null;
+        for (const p of PROVIDER_PRIORITY) {
+          const idx =
+            p === "lush"
+              ? bestLushIndexLocal
+              : bestIndexForProvider(p, false);
+
+          if (idx != null) {
+            chosen = idx;
+            break;
+          }
         }
 
-        if (lushCandidates.length) {
-          const score = (q) => {
-            if (!q) return 0;
-            const num = parseInt(String(q).match(/\d+/)?.[0] || "0", 10);
-            return num;
-          };
-
-          let best = lushCandidates[0];
-          lushCandidates.forEach((c) => {
-            if (score(c.s.quality) > score(best.s.quality)) {
-              best = c;
-            }
-          });
-
-          defaultIndex = best.idx;
-          bestLushIndexLocal = best.idx;
-        } else {
-          defaultIndex = 0;
-        }
+        defaultIndex = chosen != null ? chosen : 0;
 
         setServers(orderedServers);
         setActiveServer(defaultIndex);
