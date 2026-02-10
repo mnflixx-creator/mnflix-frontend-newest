@@ -44,10 +44,14 @@ const PROVIDER_INFO = {
     label: "Atlas",
     note: "Multi-quality MP4 (Lush provider)",
   },
+    flux: {
+    label: "Flux",
+    note: "High quality (Flux)",
+  },
 };
 
 // 🔥 order we want to use everywhere
-const PROVIDER_PRIORITY = ["lush", "flow", "sonata", "zen", "breeze", "nova"];
+const PROVIDER_PRIORITY = ["flux", "lush", "flow", "sonata", "zen", "breeze", "nova"];
 
 /* ---------- SIMPLE ICONS ---------- */
 
@@ -639,8 +643,12 @@ export default function CineproPlayer({
 
           let providerKey = "";
 
-          // --- LUSH (Atlas) FIRST ---
-          if (
+          // --- FLUX FIRST (new) ---
+          if (rawProvider.includes("flux") || rawName.includes("flux")) {
+            providerKey = "flux";
+
+          // --- LUSH (Atlas) ---
+          } else if (
             rawProvider.includes("lush") ||
             rawName.includes("lush") ||
             rawProvider.includes("atlas") ||
@@ -732,7 +740,9 @@ export default function CineproPlayer({
             st.title ||
             `Server ${idx + 1}`;
 
-          const displayName = st.quality ? `${baseLabel} ${st.quality}` : baseLabel;
+          const hideQualityInLabel = providerKey === "flux"; // ✅ Flux shows just "Flux"
+          const displayName =
+            !hideQualityInLabel && st.quality ? `${baseLabel} ${st.quality}` : baseLabel;
 
           return {
             type: streamType,
