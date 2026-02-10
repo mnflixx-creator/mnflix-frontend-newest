@@ -771,6 +771,14 @@ export default function EditMoviePage() {
                               placeholder="https://vidsrcme.ru/embed/tv?imdb=tt...&season=1&episode=1"
                               className="w-full p-2 bg-black/40 border border-white/10 rounded"
                             />
+
+                            <button
+                              type="button"
+                              onClick={() => removeEpisode(si, ei)}
+                              className="px-3 py-2 bg-red-600/80 hover:bg-red-600 rounded"
+                            >
+                              Remove
+                            </button>
                           </div>
 
                           {/* Row 2: uploaded HLS path (full width) */}
@@ -800,13 +808,6 @@ export default function EditMoviePage() {
                             <p className="text-[11px] text-white/50">
                               If set, this episode plays from your R2 upload instead of provider URL.
                             </p>
-                            <button
-                              type="button"
-                              onClick={() => removeEpisode(si, ei)}
-                              className="px-3 py-2 bg-red-600/80 hover:bg-red-600 rounded"
-                            >
-                              Remove
-                            </button>
                           </div>
 
                           <div className="md:pl-[120px] space-y-2">
