@@ -1272,7 +1272,7 @@ useEffect(() => {
 
         {!checkingAccess && !locked && !deviceError && (
           <p className="text-gray-300 mb-3 text-sm sm:text-base">
-            Хэрвээ кино тоглохгүй удах аль эсвэл буруу кино явж байвал Server сольж болохгүй бол Refresh хийж дахин оролдоно уу, 
+            Хэрвээ кино тоглохгүй удах аль эсвэл буруу кино явж байвал Server солин дахин оролдоно уу, 
           </p>
         )}
 
