@@ -1287,7 +1287,7 @@ useEffect(() => {
               {lang === "mn" ? (
                 <>
                   Видео тоглуулагч дээрх <span className="font-bold">CC</span> товчийг дарж
-                  <span className="font-bold"> Mongolian</span> хадмалыг сонгоно уу.
+                  <span className="font-bold"> Mongolian</span> хадмалыг сонгоно уу. Хэрвээ хадмал зөрж байвал Server сольж аль эсвэл алдааг мэдэгдэнэ үү.
                 </>
               ) : (
                 <>
